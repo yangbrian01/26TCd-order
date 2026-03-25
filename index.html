@@ -61,11 +61,11 @@
           
           <div id="menu-container" class="space-y-8 transition-opacity duration-300">
             <div>
-              <h3 class="text-xl font-bold text-orange-600 border-b pb-2 mb-4">🍝 午餐 (擇一)</h3>
+              <h3 id="lunch-title" class="text-xl font-bold text-orange-600 border-b pb-2 mb-4">🍝 午餐 (擇一)</h3>
               <div id="lunch-list" class="grid grid-cols-1 gap-4"></div>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-teal-600 border-b pb-2 mb-4">🥤 飲料 (擇一)</h3>
+              <h3 id="drink-title" class="text-xl font-bold text-teal-600 border-b pb-2 mb-4">🥤 飲料 (擇一)</h3>
               <div id="drink-list" class="grid grid-cols-1 gap-4"></div>
             </div>
           </div>
@@ -191,8 +191,8 @@
     let configuringItem = null; 
     let onConfirmCallback = null;
     let cachedSummaryData = null; 
+    let storeNames = { lunch: '午餐', drink: '飲料' };
 
-    // --- Modal 邏輯 ---
     function showConfirmModal(msg, cb, isDanger=false) {
         document.getElementById('system-modal-message').textContent = msg;
         onConfirmCallback = cb;
@@ -220,7 +220,6 @@
       box.textContent = msg; box.classList.remove('hidden');
     }
 
-    // 【修改】換成 26TCd 的 GAS API 網址
     const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxhvM2kLE9SGZs1_pY-thrY4ugUBSqyJz3KmTl5yW0T5TiDv_bgFsQXRxQ7bkfFh9EM/exec'; 
 
     function runGas(funcName, onSuccess, onFail, ...args) {
@@ -252,6 +251,14 @@
 
     window.onload = () => {
       runGas('getBasicSettings', res => {
+        storeNames.lunch = res.lunchStore || '午餐';
+        storeNames.drink = res.drinkStore || '飲料';
+
+        document.getElementById('lunch-title').textContent = `🍝 ${storeNames.lunch} (擇一)`;
+        document.getElementById('drink-title').textContent = `🥤 ${storeNames.drink} (擇一)`;
+        document.getElementById('summary-btn-lunch').textContent = `${storeNames.lunch}統計`;
+        document.getElementById('summary-btn-drink').textContent = `${storeNames.drink}統計`;
+
         if (res.announcement) {
           document.getElementById('announcement-text').textContent = res.announcement;
           document.getElementById('announcement-box').classList.remove('hidden');
@@ -625,15 +632,14 @@
       const btnL = document.getElementById('summary-btn-lunch');
       const btnD = document.getElementById('summary-btn-drink');
       
-      // 【修改】因為不知道 26TCd 吃什麼，先把後台按鈕改回通用文字「午餐統計/飲料統計」
       if (type === 'lunch') {
         btnL.className = "flex-1 py-2 bg-white rounded shadow text-orange-600 font-bold transition";
         btnD.className = "flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition";
-        document.getElementById('admin-summary-title').textContent = "🍝 午餐應收總計";
+        document.getElementById('admin-summary-title').textContent = `🍝 ${storeNames.lunch} 應收總計`;
       } else {
         btnD.className = "flex-1 py-2 bg-white rounded shadow text-teal-600 font-bold transition";
         btnL.className = "flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition";
-        document.getElementById('admin-summary-title').textContent = "🥤 飲料應收總計";
+        document.getElementById('admin-summary-title').textContent = `🥤 ${storeNames.drink} 應收總計`;
       }
 
       document.getElementById('admin-grand-total').textContent = `NT$ ${data.grandTotal}`;
