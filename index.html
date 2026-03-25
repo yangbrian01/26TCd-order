@@ -21,13 +21,20 @@
     .menu-card:active { transform: scale(0.98); }
     .img-container img { transition: transform 0.3s ease; }
     .menu-card:hover .img-container img { transform: scale(1.05); }
+    
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    /* 確保底部安全距離給 iOS 裝置 */
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
+    /* 高級感設計專用 CSS */
+    .glass-morphism {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
   </style>
 </head>
-<body class="p-4 sm:p-8 min-h-screen flex flex-col items-center justify-start relative transition-all duration-300" id="main-body">
+<body class="p-4 sm:p-8 min-h-screen flex flex-col items-center justify-start relative transition-all duration-300">
 
   <button onclick="openAdminPwdModal()" class="fixed bottom-6 right-6 bg-red-100 text-red-700 p-4 rounded-full shadow-xl hover:bg-red-200 font-bold ring-2 ring-red-300 z-40 flex items-center justify-center transition hover:scale-105">
     <span class="text-xl"></span>
@@ -85,15 +92,15 @@
     </div>
   </div>
 
-  <div id="floating-cart" class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.15)] z-50 transform translate-y-full transition-transform duration-300 pb-safe">
-    <div class="max-w-xl mx-auto px-5 py-3 flex justify-between items-center">
-        <div class="flex flex-col">
-            <span class="text-sm text-gray-500 font-bold" id="floating-cart-count">已選 0 項</span>
-            <span class="text-2xl font-extrabold text-red-600" id="floating-cart-total">NT$ 0</span>
+  <div id="floating-cart" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-[200%] transition-all duration-500 ease-out hidden">
+    <div class="glass-morphism rounded-full px-2 py-2 flex items-center gap-4 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.2)] border border-white/50 ring-2 ring-green-100/50 cursor-pointer" onclick="scrollToCart()">
+        <div class="pl-4 pr-1 py-1">
+            <span class="text-xs text-green-700 font-bold block mb-0.5" id="floating-cart-count">已選 0 項</span>
+            <span class="text-xl font-black text-green-900" id="floating-cart-total">NT$ 0</span>
         </div>
-        <button onclick="scrollToCart()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition flex items-center gap-2">
-            查看明細 ➔
-        </button>
+        <div class="bg-green-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl shadow-inner hover:bg-green-700 transition hover:scale-105 active:scale-95">
+          ➜
+        </div>
     </div>
   </div>
 
@@ -475,15 +482,14 @@
 
     function removeCartItem(category) { cart[category] = null; updateCartUI(); }
 
-    // 【新增】懸浮購物車控制與排版邏輯
+    // 【修改】新版膠囊購物車控制邏輯
     function updateCartUI() {
       const listDiv = document.getElementById('cart-list');
       const items = [cart.lunch, cart.drink].filter(i => i !== null);
       let total = 0;
       
-      if(items.length === 0) { 
-        listDiv.innerHTML = '<p class="text-sm text-gray-500">尚未選擇。</p>'; 
-      } else {
+      if(items.length === 0) { listDiv.innerHTML = '<p class="text-sm text-gray-500">尚未選擇。</p>'; } 
+      else {
         listDiv.innerHTML = items.map(item => {
           total += item.price;
           const cat = item.category || (item.id.startsWith('lunch') ? 'lunch' : 'drink');
@@ -496,28 +502,28 @@
       const btn = document.getElementById('submit-button');
       btn.disabled = items.length === 0; btn.textContent = items.length === 0 ? "請選擇餐點" : "確認點餐並提交";
 
-      // 控制懸浮購物車的顯示與隱藏
+      // 控制【全新膠囊購物車】的顯示與隱藏
       const floatingCart = document.getElementById('floating-cart');
-      const mainContainer = document.getElementById('main-container');
-      
       if (items.length > 0) {
         document.getElementById('floating-cart-count').textContent = `已選 ${items.length} 項`;
         document.getElementById('floating-cart-total').textContent = `NT$ ${total}`;
-        floatingCart.classList.remove('translate-y-full');
-        // 增加主容器底部空間，避免最後一個餐點被懸浮列遮擋
-        mainContainer.style.paddingBottom = "5rem"; 
+        
+        floatingCart.classList.remove('hidden'); // 先移除 hidden 才能觸發動畫
+        setTimeout(() => {
+          floatingCart.classList.remove('translate-y-[200%]', 'opacity-0');
+        }, 10);
       } else {
-        floatingCart.classList.add('translate-y-full');
-        mainContainer.style.paddingBottom = "1rem";
+        floatingCart.classList.add('translate-y-[200%]');
+        setTimeout(() => {
+          floatingCart.classList.add('hidden');
+        }, 500); // 等動畫結束再 hidden
       }
     }
 
-    // 【新增】平滑捲動到購物車區域
     function scrollToCart() {
       const cartSummary = document.getElementById('cart-summary');
       if (cartSummary) {
         cartSummary.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        // 閃爍一下原本的提交按鈕，引導使用者點擊
         const btn = document.getElementById('submit-button');
         setTimeout(() => {
           btn.classList.add('ring-4', 'ring-green-400', 'scale-105');
@@ -538,15 +544,13 @@
           document.getElementById('menu-container').classList.add('pointer-events-none', 'opacity-50');
           document.querySelectorAll('.remove-btn').forEach(b => b.classList.add('hidden'));
           // 送出成功後隱藏懸浮列
-          document.getElementById('floating-cart').classList.add('translate-y-full');
-          document.getElementById('main-container').style.paddingBottom = "1rem";
+          document.getElementById('floating-cart').classList.add('translate-y-[200%]');
         } else {
           showAlertModal(res.message); btn.disabled = false; btn.textContent = "確認點餐並提交";
         }
       }, showGasError, { username: currentUsername, lunch: cart.lunch, drink: cart.drink, total: items.reduce((sum, i) => sum + i.price, 0) });
     }
 
-    // --- 後台管理系統 ---
     function openAdminPwdModal() { 
       document.getElementById('admin-pwd-input').value = "";
       document.getElementById('pwd-modal').classList.remove('hidden'); 
