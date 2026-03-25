@@ -8,9 +8,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f3ffec; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+    /* 【修改】背景色改為溫柔的櫻花粉白 */
+    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #fff0f6; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
     button { touch-action: manipulation; cursor: pointer; position: relative; z-index: 10; user-select: none; }
-    .loading-spinner { border-top-color: #34d399; border-radius: 50%; width: 1.5rem; height: 1.5rem; animation: spin 1s linear infinite; }
+    /* 【修改】載入動畫改為粉色 */
+    .loading-spinner { border-top-color: #f472b6; border-radius: 50%; width: 1.5rem; height: 1.5rem; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 9999 !important; display: flex; justify-content: center; align-items: center; padding: 1rem; }
     .marquee-container { overflow: hidden; white-space: nowrap; position: relative; width: 100%; }
@@ -21,16 +23,15 @@
     .menu-card:active { transform: scale(0.98); }
     .img-container img { transition: transform 0.3s ease; }
     .menu-card:hover .img-container img { transform: scale(1.05); }
-    
     ::-webkit-scrollbar { height: 6px; width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 4px; }
 
-    /* 高級感設計專用 CSS */
+    /* 高級感設計專用 CSS (加上淡淡的粉色光暈) */
     .glass-morphism {
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.5);
     }
   </style>
 </head>
@@ -40,10 +41,10 @@
     <span class="text-xl"></span>
   </button>
 
-  <div id="main-container" class="w-full max-w-xl bg-white shadow-2xl rounded-2xl p-4 sm:p-8 space-y-6 ring-4 ring-green-300/50 relative flex flex-col min-h-[80vh] transition-all duration-300">
+  <div id="main-container" class="w-full max-w-xl bg-white shadow-2xl rounded-2xl p-4 sm:p-8 space-y-6 ring-4 ring-pink-300/50 relative flex flex-col min-h-[80vh] transition-all duration-300">
     <div class="flex-grow space-y-6">
         <header class="text-center pb-4 border-b border-gray-200">
-        <h1 class="text-4xl font-extrabold text-green-700">🍝 26TCd點餐 🥤</h1>
+        <h1 class="text-4xl font-extrabold text-pink-600">🌸 26TCd點餐 🌸</h1>
         <p id="user-info-display" class="text-sm mt-2 text-gray-500">輸入姓名開始點餐</p>
         </header>
 
@@ -56,8 +57,8 @@
 
         <section id="auth-section" class="space-y-6 pt-2">
           <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
-              <input type="text" name="username" placeholder="請輸入姓名 (須與名單相符)" required class="w-full p-4 border-2 border-green-200 rounded-xl focus:ring-green-500 focus:border-green-500 transition text-center text-lg font-bold text-gray-700">
-              <button type="submit" id="login-btn" class="w-full py-4 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 transition duration-200 text-lg">進入點餐</button>
+              <input type="text" name="username" placeholder="請輸入姓名 (須與名單相符)" required class="w-full p-4 border-2 border-pink-200 rounded-xl focus:ring-pink-500 focus:border-pink-500 transition text-center text-lg font-bold text-gray-700">
+              <button type="submit" id="login-btn" class="w-full py-4 bg-pink-600 text-white font-bold rounded-xl shadow-md hover:bg-pink-700 transition duration-200 text-lg">進入點餐</button>
           </form>
         </section>
 
@@ -65,14 +66,14 @@
           <div class="flex justify-between items-center">
               <h2 class="text-2xl font-bold text-gray-700">今日菜單</h2>
           </div>
-          <div id="loading-message" class="text-center text-gray-400 p-8 hidden"><div class="loading-spinner border-4 border-gray-200 border-t-green-500 inline-block"></div> 正在載入資料...</div>
+          <div id="loading-message" class="text-center text-gray-400 p-8 hidden"><div class="loading-spinner border-4 border-gray-200 border-t-pink-500 inline-block"></div> 正在載入資料...</div>
           <div id="menu-container" class="space-y-8 transition-opacity duration-300">
             <div>
-              <h3 id="lunch-title" class="text-xl font-bold text-orange-600 border-b pb-2 mb-4">🍝 午餐 (擇一)</h3>
+              <h3 id="lunch-title" class="text-xl font-bold text-orange-500 border-b pb-2 mb-4">🍝 午餐 (擇一)</h3>
               <div id="lunch-list" class="grid grid-cols-1 gap-4"></div>
             </div>
             <div>
-              <h3 id="drink-title" class="text-xl font-bold text-teal-600 border-b pb-2 mb-4">🥤 飲料 (擇一)</h3>
+              <h3 id="drink-title" class="text-xl font-bold text-teal-500 border-b pb-2 mb-4">🥤 飲料 (擇一)</h3>
               <div id="drink-list" class="grid grid-cols-1 gap-4"></div>
             </div>
           </div>
@@ -80,9 +81,9 @@
               <h3 class="text-xl font-bold text-gray-700">已選內容 / 點餐紀錄</h3>
               <div id="cart-list" class="space-y-3"><p class="text-sm text-gray-500">尚未選擇。</p></div>
           </div>
-          <div class="pt-6 border-t border-green-200 space-y-4">
-              <div class="flex justify-between items-center text-3xl font-extrabold"><span>總計:</span><span id="total-price" class="text-red-600">NT$ 0</span></div>
-              <button id="submit-button" onclick="submitOrder()" disabled class="w-full py-4 px-4 bg-green-500 text-white font-bold text-lg rounded-xl shadow-xl hover:bg-green-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">請選擇餐點</button>
+          <div class="pt-6 border-t border-pink-200 space-y-4">
+              <div class="flex justify-between items-center text-3xl font-extrabold"><span>總計:</span><span id="total-price" class="text-red-500">NT$ 0</span></div>
+              <button id="submit-button" onclick="submitOrder()" disabled class="w-full py-4 px-4 bg-pink-500 text-white font-bold text-lg rounded-xl shadow-xl hover:bg-pink-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">請選擇餐點</button>
           </div>
         </section>
     </div>
@@ -93,12 +94,12 @@
   </div>
 
   <div id="floating-cart" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-[200%] transition-all duration-500 ease-out hidden">
-    <div class="glass-morphism rounded-full px-2 py-2 flex items-center gap-4 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.2)] border border-white/50 ring-2 ring-green-100/50 cursor-pointer" onclick="scrollToCart()">
+    <div class="glass-morphism rounded-full px-2 py-2 flex items-center gap-4 shadow-[0_15px_30px_-5px_rgba(244,114,182,0.3)] border border-white/50 ring-2 ring-pink-200/50 cursor-pointer" onclick="scrollToCart()">
         <div class="pl-4 pr-1 py-1">
-            <span class="text-xs text-green-700 font-bold block mb-0.5" id="floating-cart-count">已選 0 項</span>
-            <span class="text-xl font-black text-green-900" id="floating-cart-total">NT$ 0</span>
+            <span class="text-xs text-pink-600 font-bold block mb-0.5" id="floating-cart-count">已選 0 項</span>
+            <span class="text-xl font-black text-pink-900" id="floating-cart-total">NT$ 0</span>
         </div>
-        <div class="bg-green-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl shadow-inner hover:bg-green-700 transition hover:scale-105 active:scale-95">
+        <div class="bg-pink-500 text-white w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl shadow-inner hover:bg-pink-600 transition hover:scale-105 active:scale-95">
           ➜
         </div>
     </div>
@@ -119,18 +120,18 @@
         <div id="modal-content" class="space-y-6"></div>
       </div>
       <div class="p-4 border-t bg-gray-50 flex-shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <button id="add-to-cart-btn" class="w-full py-4 bg-indigo-600 text-white font-bold rounded-lg text-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md" onclick="confirmOptions()">確認選擇</button>
+        <button id="add-to-cart-btn" class="w-full py-4 bg-pink-600 text-white font-bold rounded-lg text-lg hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md" onclick="confirmOptions()">確認選擇</button>
       </div>
     </div>
   </div>
 
   <div id="pwd-modal" class="modal-overlay hidden z-[9999]">
     <div class="bg-white rounded-xl shadow-2xl p-6 space-y-6 w-80 text-center">
-      <h2 class="text-2xl font-bold text-red-700 border-b pb-2">管理員登入</h2>
+      <h2 class="text-2xl font-bold text-red-600 border-b pb-2">管理員登入</h2>
       <input type="password" id="admin-pwd-input" placeholder="請輸入密碼 (預設: 0000)" class="w-full p-3 border rounded-lg text-center font-bold">
       <div class="flex justify-end gap-3 pt-2">
         <button onclick="closeAdminPwdModal()" class="flex-1 py-2 bg-gray-200 rounded-lg font-bold">取消</button>
-        <button id="pwd-submit-btn" onclick="verifyAdmin()" class="flex-1 py-2 bg-red-600 text-white rounded-lg font-bold">確認</button>
+        <button id="pwd-submit-btn" onclick="verifyAdmin()" class="flex-1 py-2 bg-pink-600 text-white rounded-lg font-bold">確認</button>
       </div>
     </div>
   </div>
@@ -142,7 +143,7 @@
        <p id="system-modal-message" class="text-sm text-gray-600 leading-relaxed"></p>
        <div class="flex justify-center gap-3 pt-2">
           <button id="system-modal-cancel" onclick="closeSystemModal()" class="flex-1 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold">取消</button>
-          <button id="system-modal-confirm" class="flex-1 py-2 bg-red-600 text-white rounded-lg font-bold">確定</button>
+          <button id="system-modal-confirm" class="flex-1 py-2 bg-pink-600 text-white rounded-lg font-bold">確定</button>
        </div>
     </div>
   </div>
@@ -158,14 +159,14 @@
   <section id="admin-section" class="hidden fixed inset-0 w-full h-full bg-gray-100 z-50 flex flex-col">
     <div class="bg-white shadow-sm p-4 flex-none z-10">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
-          <h2 class="text-xl sm:text-2xl font-bold text-red-700"> 後台管理系統</h2>
+          <h2 class="text-xl sm:text-2xl font-bold text-pink-600"> 後台管理系統</h2>
           <button onclick="closeAdminPanel()" class="px-4 py-2 bg-gray-200 rounded-lg text-sm font-bold hover:bg-gray-300 transition">退出管理</button>
         </div>
     </div>
     
     <div class="bg-white border-b flex-none z-10">
       <div class="max-w-4xl mx-auto px-4 flex space-x-2 overflow-x-auto">
-        <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="px-4 py-3 text-red-600 border-b-2 border-red-600 font-bold whitespace-nowrap">名單對帳</button>
+        <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="px-4 py-3 text-pink-600 border-b-2 border-pink-600 font-bold whitespace-nowrap">名單對帳</button>
         <button onclick="switchAdminTab('summary')" id="tab-btn-summary" class="px-4 py-3 text-gray-500 whitespace-nowrap">訂購統計</button>
         <button onclick="switchAdminTab('menu')" id="tab-btn-menu" class="px-4 py-3 text-gray-500 whitespace-nowrap">📝 菜單編輯</button>
         <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="px-4 py-3 text-gray-500 whitespace-nowrap">⚙️ 系統設定</button>
@@ -178,15 +179,15 @@
           <div id="admin-tab-orders" class="space-y-4">
               <div class="bg-white p-3 rounded-lg shadow-sm border space-y-3">
                   <div class="flex justify-between items-center gap-2">
-                      <input type="text" id="order-search-input" oninput="applyOrderFilters()" placeholder="🔍 搜尋姓名..." class="p-2 border rounded-lg outline-none flex-grow">
-                      <button onclick="confirmResetOrders()" class="bg-red-600 text-white px-3 py-2 rounded shadow text-sm font-bold flex-shrink-0">⚠️ 清空</button>
+                      <input type="text" id="order-search-input" oninput="applyOrderFilters()" placeholder="🔍 搜尋姓名..." class="p-2 border rounded-lg outline-none flex-grow focus:ring-2 ring-pink-300">
+                      <button onclick="confirmResetOrders()" class="bg-red-500 text-white px-3 py-2 rounded shadow text-sm font-bold flex-shrink-0">⚠️ 清空</button>
                   </div>
                   <div class="flex flex-wrap items-center gap-2 border-t pt-3">
                       <button onclick="setOrderFilter('all')" id="filter-btn-all" class="px-3 py-1 bg-gray-800 text-white rounded shadow text-sm font-bold">全部</button>
                       <button onclick="setOrderFilter('unordered')" id="filter-btn-unordered" class="px-3 py-1 bg-gray-200 text-gray-700 rounded shadow text-sm font-bold hover:bg-gray-300">未點餐</button>
                       <button onclick="setOrderFilter('unpaid')" id="filter-btn-unpaid" class="px-3 py-1 bg-gray-200 text-gray-700 rounded shadow text-sm font-bold hover:bg-gray-300">未繳費</button>
                       <div class="flex-grow"></div>
-                      <button onclick="copyUnpaidList()" class="px-3 py-1 bg-yellow-500 text-white rounded shadow text-sm font-bold hover:bg-yellow-600 transition">📋 複製催繳名單</button>
+                      <button onclick="copyUnpaidList()" class="px-3 py-1 bg-pink-500 text-white rounded shadow text-sm font-bold hover:bg-pink-600 transition">📋 複製催繳名單</button>
                   </div>
               </div>
               <div id="admin-order-list" class="space-y-2 pb-10"></div>
@@ -194,14 +195,14 @@
 
           <div id="admin-tab-summary" class="hidden space-y-4">
               <div class="flex gap-2 bg-gray-200 p-1 rounded-lg">
-                <button id="summary-btn-lunch" onclick="renderSummaryTable('lunch')" class="flex-1 py-2 bg-white rounded shadow text-orange-600 font-bold transition">午餐統計</button>
+                <button id="summary-btn-lunch" onclick="renderSummaryTable('lunch')" class="flex-1 py-2 bg-white rounded shadow text-pink-600 font-bold transition">午餐統計</button>
                 <button id="summary-btn-drink" onclick="renderSummaryTable('drink')" class="flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition">飲料統計</button>
               </div>
-              <div class="flex justify-end"><button onclick="captureSummary()" class="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg shadow">📸 匯出此頁統計</button></div>
+              <div class="flex justify-end"><button onclick="captureSummary()" class="px-4 py-2 bg-indigo-500 text-white text-sm font-bold rounded-lg shadow">📸 匯出此頁統計</button></div>
               <div id="summary-capture-area" class="p-2 bg-white rounded-xl">
-                  <div class="bg-green-50 p-6 rounded-xl text-center shadow-inner border border-green-100 mb-4">
+                  <div class="bg-pink-50 p-6 rounded-xl text-center shadow-inner border border-pink-100 mb-4">
                       <p id="admin-summary-title" class="text-gray-600 font-medium">本次應收總金額</p>
-                      <p id="admin-grand-total" class="text-4xl font-extrabold text-green-700 mt-2">NT$ 0</p>
+                      <p id="admin-grand-total" class="text-4xl font-extrabold text-pink-700 mt-2">NT$ 0</p>
                   </div>
                   <table class="w-full text-left text-sm bg-white rounded-lg shadow-sm border"><tbody id="admin-summary-list" class="divide-y divide-gray-100"></tbody></table>
               </div>
@@ -209,15 +210,15 @@
 
           <div id="admin-tab-menu" class="hidden space-y-4 pb-20">
             <div class="flex gap-2 bg-gray-200 p-1 rounded-lg">
-              <button id="menu-tab-lunch" onclick="renderAdminMenuList('lunch')" class="flex-1 py-2 bg-white rounded shadow text-orange-600 font-bold transition">午餐菜單</button>
+              <button id="menu-tab-lunch" onclick="renderAdminMenuList('lunch')" class="flex-1 py-2 bg-white rounded shadow text-pink-600 font-bold transition">午餐菜單</button>
               <button id="menu-tab-drink" onclick="renderAdminMenuList('drink')" class="flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition">飲料菜單</button>
             </div>
             <div class="flex justify-between items-center mb-2">
               <h3 id="admin-menu-title" class="font-bold text-gray-700 text-lg">編輯清單</h3>
-              <button onclick="openMenuEditorModal(-1)" class="bg-green-600 text-white px-3 py-1.5 rounded-lg shadow text-sm font-bold hover:bg-green-700">+ 新增品項</button>
+              <button onclick="openMenuEditorModal(-1)" class="bg-pink-600 text-white px-3 py-1.5 rounded-lg shadow text-sm font-bold hover:bg-pink-700">+ 新增品項</button>
             </div>
             <div id="admin-menu-list-container" class="space-y-3"></div>
-            <button id="save-menu-server-btn" onclick="saveMenuToServer()" class="w-full py-4 mt-6 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-2">
+            <button id="save-menu-server-btn" onclick="saveMenuToServer()" class="w-full py-4 mt-6 bg-pink-500 text-white font-bold rounded-xl shadow-lg hover:bg-pink-600 transition flex justify-center items-center gap-2">
               ☁️ 將此分類儲存至雲端試算表
             </button>
           </div>
@@ -235,15 +236,15 @@
       </div>
       <div class="p-5 overflow-y-auto space-y-4 flex-grow">
         <div class="space-y-3">
-          <div><label class="block text-sm font-bold text-gray-700 mb-1">品項名稱 <span class="text-red-500">*</span></label><input type="text" id="edit-item-name" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300"></div>
-          <div><label class="block text-sm font-bold text-gray-700 mb-1">基本價格 <span class="text-red-500">*</span></label><input type="number" id="edit-item-price" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300" placeholder="0"></div>
-          <div><label class="block text-sm font-bold text-gray-700 mb-1">圖片網址 (選填)</label><input type="text" id="edit-item-image" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300 text-sm" placeholder="https://..."></div>
+          <div><label class="block text-sm font-bold text-gray-700 mb-1">品項名稱 <span class="text-red-500">*</span></label><input type="text" id="edit-item-name" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-pink-300"></div>
+          <div><label class="block text-sm font-bold text-gray-700 mb-1">基本價格 <span class="text-red-500">*</span></label><input type="number" id="edit-item-price" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-pink-300" placeholder="0"></div>
+          <div><label class="block text-sm font-bold text-gray-700 mb-1">圖片網址 (選填)</label><input type="text" id="edit-item-image" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-pink-300 text-sm" placeholder="https://..."></div>
         </div>
         <hr>
         <div>
           <div class="flex justify-between items-center mb-2">
-            <label class="block text-base font-bold text-indigo-700">🛒 加購與客製化選項</label>
-            <button onclick="addOptionGroup()" class="text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded font-bold hover:bg-indigo-200">+ 新增群組</button>
+            <label class="block text-base font-bold text-pink-600">🛒 加購與客製化選項</label>
+            <button onclick="addOptionGroup()" class="text-sm bg-pink-100 text-pink-700 px-2 py-1 rounded font-bold hover:bg-pink-200">+ 新增群組</button>
           </div>
           <p class="text-xs text-gray-500 mb-3">例如：新增「甜度」群組，裡面包含「正常(+0)」、「半糖(+0)」</p>
           <div id="options-builder-container" class="space-y-3"></div>
@@ -251,7 +252,7 @@
       </div>
       <div class="p-4 border-t bg-gray-50 flex gap-3 rounded-b-xl">
         <button onclick="closeMenuEditorModal()" class="flex-1 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300">取消</button>
-        <button onclick="saveItemToLocalData()" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md">暫存品項</button>
+        <button onclick="saveItemToLocalData()" class="flex-1 py-3 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700 shadow-md">暫存品項</button>
       </div>
     </div>
   </div>
@@ -275,7 +276,7 @@
         onConfirmCallback = cb;
         const confirmBtn = document.getElementById('system-modal-confirm');
         confirmBtn.onclick = () => { if(onConfirmCallback) onConfirmCallback(); closeSystemModal(); };
-        confirmBtn.className = isDanger ? "flex-1 py-2 bg-red-600 text-white rounded-lg font-bold" : "flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold";
+        confirmBtn.className = isDanger ? "flex-1 py-2 bg-red-600 text-white rounded-lg font-bold" : "flex-1 py-2 bg-pink-600 text-white rounded-lg font-bold";
         document.getElementById('system-modal-icon').textContent = isDanger ? "⚠️" : "ℹ️";
         document.getElementById('system-modal-cancel').classList.remove('hidden');
         document.getElementById('system-modal').classList.remove('hidden');
@@ -285,7 +286,7 @@
         document.getElementById('system-modal-icon').textContent = "✅";
         const confirmBtn = document.getElementById('system-modal-confirm');
         confirmBtn.onclick = closeSystemModal;
-        confirmBtn.className = "flex-1 py-2 bg-green-600 text-white rounded-lg font-bold";
+        confirmBtn.className = "flex-1 py-2 bg-pink-600 text-white rounded-lg font-bold";
         document.getElementById('system-modal-cancel').classList.add('hidden');
         document.getElementById('system-modal').classList.remove('hidden');
     }
@@ -338,8 +339,9 @@
           const btn = document.getElementById('login-btn');
           btn.disabled = true;
           btn.textContent = `已超過截單時間 (${res.cutoffStr})`;
-          btn.classList.replace('bg-green-600', 'bg-gray-500');
-          btn.classList.replace('hover:bg-green-700', 'hover:bg-gray-500');
+          // 【修改】JS 內的樣式替換也一併改為 pink
+          btn.classList.replace('bg-pink-600', 'bg-gray-500');
+          btn.classList.replace('hover:bg-pink-700', 'hover:bg-gray-500');
         }
       }, showGasError);
     };
@@ -401,7 +403,7 @@
       const html = items.map(item => {
         const imgHtml = item.image ? `<img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-100 flex items-center justify-center text-3xl opacity-50">🍽️</div>`;
         return `
-        <div class="menu-card flex p-3 rounded-xl shadow-sm hover:shadow-md ring-1 ring-gray-200 bg-white gap-3 cursor-pointer" onclick="handleItemClick('${item.id}')">
+        <div class="menu-card flex p-3 rounded-xl shadow-sm hover:shadow-md ring-1 ring-pink-200 bg-white gap-3 cursor-pointer" onclick="handleItemClick('${item.id}')">
           <div class="img-container flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-gray-100 relative shadow-sm">
               ${imgHtml}
               <div class="absolute bottom-1 right-1 bg-white rounded-full p-0.5 shadow-sm">
@@ -423,7 +425,9 @@
       if (item.options && Object.keys(item.options).length > 0) { configuringItem = item; openOptionsModal(item); } 
       else {
         cart[item.category] = { id: item.id, name: item.name, price: item.price, selections: {} };
-        updateCartUI(); showMessage(`已選擇：${item.name}`, "bg-green-100 text-green-700");
+        updateCartUI(); 
+        // 【修改】提示改為粉色
+        showMessage(`已選擇：${item.name}`, "bg-pink-100 text-pink-700");
       }
     }
 
@@ -449,7 +453,7 @@
           const name = Array.isArray(opt) ? opt[0] : opt;
           const extraPrice = Array.isArray(opt) ? opt[1] : 0;
           const priceLabel = extraPrice > 0 ? ` (+NT$${extraPrice})` : '';
-          return `<label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition"><input type="radio" name="option-${optionName}" value="${name}" data-extra="${extraPrice}" onchange="checkModalSelections()" class="form-radio h-5 w-5 text-indigo-600"><span class="ml-3 text-gray-700 font-medium">${name}${priceLabel}</span></label>`;
+          return `<label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition"><input type="radio" name="option-${optionName}" value="${name}" data-extra="${extraPrice}" onchange="checkModalSelections()" class="form-radio h-5 w-5 text-pink-600"><span class="ml-3 text-gray-700 font-medium">${name}${priceLabel}</span></label>`;
         }).join('');
         content.insertAdjacentHTML('beforeend', `<div><h4 class="text-lg font-bold mb-2 text-gray-800">${optionName} <span class="text-red-500 text-xs font-normal ml-1">* 必選</span></h4><div class="space-y-2">${optionsHtml}</div></div>`);
       });
@@ -477,12 +481,11 @@
         const cat = radio.name.replace('option-', ''); selections[cat] = radio.value; extraTotal += parseFloat(radio.dataset.extra || 0);
       });
       cart[configuringItem.category] = { id: configuringItem.id, name: configuringItem.name, price: configuringItem.price + extraTotal, selections: selections };
-      updateCartUI(); showMessage(`已選擇：${configuringItem.name}`, "bg-green-100 text-green-700"); closeOptionsModal();
+      updateCartUI(); showMessage(`已選擇：${configuringItem.name}`, "bg-pink-100 text-pink-700"); closeOptionsModal();
     }
 
     function removeCartItem(category) { cart[category] = null; updateCartUI(); }
 
-    // 【修改】新版膠囊購物車控制邏輯
     function updateCartUI() {
       const listDiv = document.getElementById('cart-list');
       const items = [cart.lunch, cart.drink].filter(i => i !== null);
@@ -494,7 +497,7 @@
           total += item.price;
           const cat = item.category || (item.id.startsWith('lunch') ? 'lunch' : 'drink');
           let details = item.selections && Object.keys(item.selections).length > 0 ? `<p class="text-xs text-gray-500 mt-1">${Object.values(item.selections).join(' / ')}</p>` : '';
-          return `<div class="flex items-center justify-between p-3 bg-white border-b ring-1 ring-gray-100 rounded-lg shadow-sm"><div><p class="font-bold text-gray-700">${item.name}</p>${details}<p class="text-sm text-red-500 font-medium mt-1">NT$ ${item.price}</p></div><button onclick="removeCartItem('${cat}')" class="text-gray-400 hover:text-red-600 text-2xl font-bold px-2 remove-btn">&times;</button></div>`;
+          return `<div class="flex items-center justify-between p-3 bg-white border-b ring-1 ring-pink-100 rounded-lg shadow-sm"><div><p class="font-bold text-gray-700">${item.name}</p>${details}<p class="text-sm text-red-500 font-medium mt-1">NT$ ${item.price}</p></div><button onclick="removeCartItem('${cat}')" class="text-gray-400 hover:text-red-600 text-2xl font-bold px-2 remove-btn">&times;</button></div>`;
         }).join('');
       }
       
@@ -502,13 +505,12 @@
       const btn = document.getElementById('submit-button');
       btn.disabled = items.length === 0; btn.textContent = items.length === 0 ? "請選擇餐點" : "確認點餐並提交";
 
-      // 控制【全新膠囊購物車】的顯示與隱藏
       const floatingCart = document.getElementById('floating-cart');
       if (items.length > 0) {
         document.getElementById('floating-cart-count').textContent = `已選 ${items.length} 項`;
         document.getElementById('floating-cart-total').textContent = `NT$ ${total}`;
         
-        floatingCart.classList.remove('hidden'); // 先移除 hidden 才能觸發動畫
+        floatingCart.classList.remove('hidden'); 
         setTimeout(() => {
           floatingCart.classList.remove('translate-y-[200%]', 'opacity-0');
         }, 10);
@@ -516,7 +518,7 @@
         floatingCart.classList.add('translate-y-[200%]');
         setTimeout(() => {
           floatingCart.classList.add('hidden');
-        }, 500); // 等動畫結束再 hidden
+        }, 500); 
       }
     }
 
@@ -526,8 +528,9 @@
         cartSummary.scrollIntoView({ behavior: 'smooth', block: 'end' });
         const btn = document.getElementById('submit-button');
         setTimeout(() => {
-          btn.classList.add('ring-4', 'ring-green-400', 'scale-105');
-          setTimeout(() => btn.classList.remove('ring-4', 'ring-green-400', 'scale-105'), 600);
+          // 【修改】閃爍動畫改為粉色
+          btn.classList.add('ring-4', 'ring-pink-400', 'scale-105');
+          setTimeout(() => btn.classList.remove('ring-4', 'ring-pink-400', 'scale-105'), 600);
         }, 300);
       }
     }
@@ -543,7 +546,6 @@
           btn.disabled = true; btn.textContent = "已完成點餐";
           document.getElementById('menu-container').classList.add('pointer-events-none', 'opacity-50');
           document.querySelectorAll('.remove-btn').forEach(b => b.classList.add('hidden'));
-          // 送出成功後隱藏懸浮列
           document.getElementById('floating-cart').classList.add('translate-y-[200%]');
         } else {
           showAlertModal(res.message); btn.disabled = false; btn.textContent = "確認點餐並提交";
@@ -580,12 +582,13 @@
     function switchAdminTab(tabName) {
       ['orders', 'summary', 'menu', 'settings'].forEach(t => {
          document.getElementById(`admin-tab-${t}`).classList.add('hidden');
-         document.getElementById(`tab-btn-${t}`).classList.replace('text-red-600', 'text-gray-500');
-         document.getElementById(`tab-btn-${t}`).classList.remove('border-red-600');
+         // 【修改】Tab 按鈕切換顏色
+         document.getElementById(`tab-btn-${t}`).classList.replace('text-pink-600', 'text-gray-500');
+         document.getElementById(`tab-btn-${t}`).classList.remove('border-pink-600');
       });
       document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
-      document.getElementById(`tab-btn-${tabName}`).classList.replace('text-gray-500', 'text-red-600');
-      document.getElementById(`tab-btn-${tabName}`).classList.add('border-red-600');
+      document.getElementById(`tab-btn-${tabName}`).classList.replace('text-gray-500', 'text-pink-600');
+      document.getElementById(`tab-btn-${tabName}`).classList.add('border-pink-600');
       
       if (tabName === 'orders') loadAdminOrders();
       if (tabName === 'summary') loadAdminSummary();
@@ -599,8 +602,9 @@
       runGas('getAdminOrders', res => {
         if(res.length===0) { div.innerHTML='<p class="text-center">無資料</p>'; return; }
         div.innerHTML = res.map(o => {
-          const statusClass = o.paid ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500';
-          const cardBorder = o.hasOrdered ? 'border-green-300' : 'border-gray-200 opacity-60';
+          // 【修改】已繳費的按鈕改為粉色
+          const statusClass = o.paid ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-500';
+          const cardBorder = o.hasOrdered ? 'border-pink-300' : 'border-gray-200 opacity-60';
           return `
             <div class="bg-white border-2 ${cardBorder} p-3 rounded shadow-sm admin-order-card" data-name="${o.user}" data-has-ordered="${o.hasOrdered}" data-paid="${o.paid}">
               <div class="flex justify-between items-center border-b pb-2 mb-2">
@@ -608,7 +612,7 @@
                 ${o.hasOrdered ? `<button onclick="togglePay(this, ${o.rowIndex})" class="px-3 py-1 rounded-full text-xs font-bold transition ${statusClass}">${o.paid?'已繳費':'未繳費'}</button>` : '<span class="text-xs text-gray-400">尚未點餐</span>'}
               </div>
               <div class="text-sm text-gray-600 whitespace-pre-line">${o.items}</div>
-              ${o.hasOrdered ? `<div class="text-right font-bold text-red-600 mt-2">總計: $${o.total}</div>` : ''}
+              ${o.hasOrdered ? `<div class="text-right font-bold text-red-500 mt-2">總計: $${o.total}</div>` : ''}
             </div>`;
         }).join('');
         applyOrderFilters(); 
@@ -653,7 +657,8 @@
       const isPaid = btn.innerText === '已繳費';
       const card = btn.closest('.admin-order-card');
       btn.innerText = isPaid ? '未繳費' : '已繳費';
-      btn.className = `px-3 py-1 rounded-full text-xs font-bold transition ${isPaid ? 'bg-gray-200 text-gray-500' : 'bg-green-500 text-white'}`;
+      // 【修改】切換已繳費的按鈕改為粉色
+      btn.className = `px-3 py-1 rounded-full text-xs font-bold transition ${isPaid ? 'bg-gray-200 text-gray-500' : 'bg-pink-500 text-white'}`;
       card.dataset.paid = (!isPaid).toString(); 
       runGas('togglePaymentStatus', ()=>{}, showGasError, rowIndex, isPaid);
     }
@@ -688,12 +693,13 @@
       const btnL = document.getElementById('summary-btn-lunch');
       const btnD = document.getElementById('summary-btn-drink');
       
+      // 【修改】後台按鈕的粉紅色切換
       if (type === 'lunch') {
-        btnL.className = "flex-1 py-2 bg-white rounded shadow text-orange-600 font-bold transition";
+        btnL.className = "flex-1 py-2 bg-white rounded shadow text-pink-600 font-bold transition";
         btnD.className = "flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition";
         document.getElementById('admin-summary-title').textContent = `🍝 ${storeNames.lunch} 應收總計`;
       } else {
-        btnD.className = "flex-1 py-2 bg-white rounded shadow text-teal-600 font-bold transition";
+        btnD.className = "flex-1 py-2 bg-white rounded shadow text-pink-600 font-bold transition";
         btnL.className = "flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition";
         document.getElementById('admin-summary-title').textContent = `🥤 ${storeNames.drink} 應收總計`;
       }
@@ -733,11 +739,12 @@
       const btnL = document.getElementById('menu-tab-lunch');
       const btnD = document.getElementById('menu-tab-drink');
       
+      // 【修改】菜單編輯按鈕的粉色切換
       if (category === 'lunch') {
-        btnL.className = "flex-1 py-2 bg-white rounded shadow text-orange-600 font-bold transition";
+        btnL.className = "flex-1 py-2 bg-white rounded shadow text-pink-600 font-bold transition";
         btnD.className = "flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition";
       } else {
-        btnD.className = "flex-1 py-2 bg-white rounded shadow text-teal-600 font-bold transition";
+        btnD.className = "flex-1 py-2 bg-white rounded shadow text-pink-600 font-bold transition";
         btnL.className = "flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition";
       }
 
@@ -752,7 +759,7 @@
       listDiv.innerHTML = items.map((item, idx) => {
         const optionCount = item.options ? Object.keys(item.options).length : 0;
         return `
-          <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-blue-300 transition">
+          <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-pink-300 transition">
             <div class="flex items-center gap-3">
               ${item.image ? `<img src="${item.image}" class="w-12 h-12 rounded object-cover border">` : `<div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-xl">🍽️</div>`}
               <div>
@@ -764,7 +771,7 @@
               </div>
             </div>
             <div class="flex gap-2">
-              <button onclick="openMenuEditorModal(${idx})" class="p-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">✎ 編輯</button>
+              <button onclick="openMenuEditorModal(${idx})" class="p-2 bg-pink-100 text-pink-700 rounded hover:bg-pink-200">✎ 編輯</button>
               <button onclick="deleteMenuItemFromLocal(${idx})" class="p-2 bg-red-100 text-red-700 rounded hover:bg-red-200">✖ 刪除</button>
             </div>
           </div>
@@ -807,10 +814,10 @@
         html += `
           <div class="border border-gray-200 p-3 rounded-lg bg-white relative shadow-sm">
             <div class="flex justify-between items-center mb-2">
-              <input type="text" value="${groupName}" onchange="renameOptionGroup('${groupName}', this.value)" class="font-bold text-gray-700 bg-transparent border-b border-gray-300 w-1/2 outline-none focus:border-indigo-500 px-1" placeholder="輸入群組名稱(如:甜度)">
+              <input type="text" value="${groupName}" onchange="renameOptionGroup('${groupName}', this.value)" class="font-bold text-gray-700 bg-transparent border-b border-gray-300 w-1/2 outline-none focus:border-pink-500 px-1" placeholder="輸入群組名稱(如:甜度)">
               <button onclick="deleteOptionGroup('${groupName}')" class="text-red-500 hover:bg-red-50 px-2 py-1 rounded text-sm font-bold">刪除群組</button>
             </div>
-            <div class="space-y-2 pl-2 border-l-2 border-indigo-100">`;
+            <div class="space-y-2 pl-2 border-l-2 border-pink-100">`;
 
         currentEditOptions[groupName].forEach((opt, idx) => {
           let optName = Array.isArray(opt) ? opt[0] : opt;
@@ -818,14 +825,14 @@
           html += `
             <div class="flex items-center gap-2">
               <span class="text-gray-400 text-xs">↳</span>
-              <input type="text" value="${optName}" onchange="updateOptionItem('${groupName}', ${idx}, 'name', this.value)" class="border border-gray-200 p-1.5 text-sm rounded flex-1 focus:ring-1 ring-indigo-300 outline-none" placeholder="選項名稱(如:半糖)">
+              <input type="text" value="${optName}" onchange="updateOptionItem('${groupName}', ${idx}, 'name', this.value)" class="border border-gray-200 p-1.5 text-sm rounded flex-1 focus:ring-1 ring-pink-300 outline-none" placeholder="選項名稱(如:半糖)">
               <span class="text-xs text-gray-500 font-bold">+NT$</span>
-              <input type="number" value="${optPrice}" onchange="updateOptionItem('${groupName}', ${idx}, 'price', this.value)" class="border border-gray-200 p-1.5 text-sm rounded w-16 text-center focus:ring-1 ring-indigo-300 outline-none" placeholder="0">
+              <input type="number" value="${optPrice}" onchange="updateOptionItem('${groupName}', ${idx}, 'price', this.value)" class="border border-gray-200 p-1.5 text-sm rounded w-16 text-center focus:ring-1 ring-pink-300 outline-none" placeholder="0">
               <button onclick="deleteOptionItem('${groupName}', ${idx})" class="text-gray-400 hover:text-red-500 font-bold text-lg px-1">&times;</button>
             </div>`;
         });
 
-        html += `</div><button onclick="addOptionItem('${groupName}')" class="mt-3 text-sm text-indigo-600 font-bold hover:bg-indigo-50 px-2 py-1 rounded flex items-center gap-1">➕ 新增選項</button></div>`;
+        html += `</div><button onclick="addOptionItem('${groupName}')" class="mt-3 text-sm text-pink-600 font-bold hover:bg-pink-50 px-2 py-1 rounded flex items-center gap-1">➕ 新增選項</button></div>`;
       });
       container.innerHTML = html;
     }
@@ -913,20 +920,20 @@
                 <div class="bg-white p-5 rounded-lg shadow-sm border space-y-4">
                     <div>
                         <label class="block font-bold text-gray-700 mb-1">截單時間 (超過此時間自動關閉點餐)</label>
-                        <input type="datetime-local" id="set-cutoff" value="${res.cutoff}" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                        <input type="datetime-local" id="set-cutoff" value="${res.cutoff}" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-pink-300 outline-none">
                     </div>
                     <div>
                         <label class="block font-bold text-gray-700 mb-1">跑馬燈公告</label>
-                        <input type="text" id="set-ann" value="${res.ann}" placeholder="例如：本週五前請完成點餐喔！" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                        <input type="text" id="set-ann" value="${res.ann}" placeholder="例如：本週五前請完成點餐喔！" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-pink-300 outline-none">
                     </div>
                     <div class="flex gap-4">
                         <div class="flex-1">
                             <label class="block font-bold text-gray-700 mb-1">午餐店名</label>
-                            <input type="text" id="set-lunch" value="${res.lunchStore}" placeholder="例如: 麥當勞" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                            <input type="text" id="set-lunch" value="${res.lunchStore}" placeholder="例如: 麥當勞" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-pink-300 outline-none">
                         </div>
                         <div class="flex-1">
                             <label class="block font-bold text-gray-700 mb-1">飲料店名</label>
-                            <input type="text" id="set-drink" value="${res.drinkStore}" placeholder="例如: 50嵐" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                            <input type="text" id="set-drink" value="${res.drinkStore}" placeholder="例如: 50嵐" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-pink-300 outline-none">
                         </div>
                     </div>
                     <hr class="my-4 border-gray-200">
@@ -935,7 +942,7 @@
                         <input type="text" id="set-pwd" value="${res.pwd}" class="w-full p-2 border border-red-200 rounded focus:ring-2 focus:ring-red-300 outline-none text-red-600 font-bold">
                         <p class="text-xs text-gray-400 mt-1">預設為 0000，修改後請務必牢記</p>
                     </div>
-                    <button onclick="saveAdminSettingsUI()" class="w-full py-3 mt-4 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition">💾 儲存所有設定</button>
+                    <button onclick="saveAdminSettingsUI()" class="w-full py-3 mt-4 bg-pink-600 text-white font-bold rounded-lg shadow-md hover:bg-pink-700 transition">💾 儲存所有設定</button>
                 </div>
             `;
         }, showGasError);
