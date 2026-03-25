@@ -44,23 +44,25 @@
     }
     .sakura-petal {
       position: absolute;
+      top: -20%; /* 確保一開始絕對在畫面外 */
+      opacity: 0; /* 預設完全透明 */
       background: linear-gradient(135deg, #ffb7b2, #fbcfe8);
       border-radius: 15px 0 15px 0;
-      opacity: 0.8;
       animation: fall linear infinite, sway ease-in-out infinite alternate;
+      animation-fill-mode: both; /* 讓動畫前後套用正確的樣式 */
       box-shadow: 0px 2px 5px rgba(255, 183, 178, 0.3); /* 給花瓣一點點立體感 */
     }
     
     @keyframes fall {
-      0% { top: -10%; opacity: 0; }
-      10% { opacity: 0.9; }
-      90% { opacity: 0.9; }
+      0% { top: -20%; opacity: 0; }
+      10% { opacity: 0.85; }
+      80% { opacity: 0.85; }
       100% { top: 110%; opacity: 0; }
     }
     
     @keyframes sway {
       0% { transform: translateX(0px) rotate(0deg); }
-      100% { transform: translateX(35px) rotate(45deg); }
+      100% { transform: translateX(40px) rotate(60deg); }
     }
     /* ==================================================== */
   </style>
@@ -294,7 +296,7 @@
       container.className = 'sakura-container';
       document.body.appendChild(container);
 
-      const petalCount = 35; // 花瓣數量
+      const petalCount = 40; 
       
       for (let i = 0; i < petalCount; i++) {
         const petal = document.createElement('div');
@@ -304,18 +306,20 @@
         const startPositionLeft = Math.random() * 100;
         const fallDuration = Math.random() * 5 + 6;
         const swayDuration = Math.random() * 2 + 2;
-        const delay = Math.random() * 7;
+        
+        // 🌟 改成負數延遲，讓動畫預先開跑，避免全部擠在頂端！
+        const fallDelay = -(Math.random() * fallDuration);
+        const swayDelay = -(Math.random() * swayDuration);
 
         petal.style.width = `${size}px`;
         petal.style.height = `${size * 1.3}px`;
         petal.style.left = `${startPositionLeft}vw`;
         petal.style.animationDuration = `${fallDuration}s, ${swayDuration}s`;
-        petal.style.animationDelay = `${delay}s, ${delay}s`;
+        petal.style.animationDelay = `${fallDelay}s, ${swayDelay}s`;
 
         container.appendChild(petal);
       }
     }
-    // 當網頁 HTML 載入完成後啟動櫻花特效
     document.addEventListener('DOMContentLoaded', createSakura);
     // ====================================================
 
