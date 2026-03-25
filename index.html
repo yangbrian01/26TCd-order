@@ -8,10 +8,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    /* 【修改】背景色改為溫柔的櫻花粉白 */
+    /* 背景色改為溫柔的櫻花粉白 */
     body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #fff0f6; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
     button { touch-action: manipulation; cursor: pointer; position: relative; z-index: 10; user-select: none; }
-    /* 【修改】載入動畫改為粉色 */
     .loading-spinner { border-top-color: #f472b6; border-radius: 50%; width: 1.5rem; height: 1.5rem; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 9999 !important; display: flex; justify-content: center; align-items: center; padding: 1rem; }
@@ -28,11 +27,42 @@
 
     /* 高級感設計專用 CSS (加上淡淡的粉色光暈) */
     .glass-morphism {
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
     }
+
+    /* ================= 櫻花飄落特效 CSS ================= */
+    .sakura-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none; /* 讓花瓣不會擋住使用者的點擊 */
+      z-index: 5; /* 讓櫻花飄在卡片上方，但不會遮住彈窗和懸浮按鈕 */
+      overflow: hidden;
+    }
+    .sakura-petal {
+      position: absolute;
+      background: linear-gradient(135deg, #ffb7b2, #fbcfe8);
+      border-radius: 15px 0 15px 0;
+      opacity: 0.8;
+      animation: fall linear infinite, sway ease-in-out infinite alternate;
+      box-shadow: 0px 2px 5px rgba(255, 183, 178, 0.3); /* 給花瓣一點點立體感 */
+    }
+    
+    @keyframes fall {
+      0% { top: -10%; opacity: 0; }
+      10% { opacity: 0.9; }
+      90% { opacity: 0.9; }
+      100% { top: 110%; opacity: 0; }
+    }
+    
+    @keyframes sway {
+      0% { transform: translateX(0px) rotate(0deg); }
+      100% { transform: translateX(35px) rotate(45deg); }
+    }
+    /* ==================================================== */
   </style>
 </head>
 <body class="p-4 sm:p-8 min-h-screen flex flex-col items-center justify-start relative transition-all duration-300">
@@ -41,7 +71,7 @@
     <span class="text-xl"></span>
   </button>
 
-  <div id="main-container" class="w-full max-w-xl bg-white shadow-2xl rounded-2xl p-4 sm:p-8 space-y-6 ring-4 ring-pink-300/50 relative flex flex-col min-h-[80vh] transition-all duration-300">
+  <div id="main-container" class="w-full max-w-xl bg-white shadow-2xl rounded-2xl p-4 sm:p-8 space-y-6 ring-4 ring-pink-300/50 relative z-10 flex flex-col min-h-[80vh] transition-all duration-300">
     <div class="flex-grow space-y-6">
         <header class="text-center pb-4 border-b border-gray-200">
         <h1 class="text-4xl font-extrabold text-pink-600">🌸 26TCd點餐 🌸</h1>
@@ -93,8 +123,8 @@
     </div>
   </div>
 
-  <div id="floating-cart" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-[200%] transition-all duration-500 ease-out hidden">
-    <div class="glass-morphism rounded-full px-2 py-2 flex items-center gap-4 shadow-[0_15px_30px_-5px_rgba(244,114,182,0.3)] border border-white/50 ring-2 ring-pink-200/50 cursor-pointer" onclick="scrollToCart()">
+  <div id="floating-cart" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] transform translate-y-[200%] transition-all duration-500 ease-out hidden">
+    <div class="glass-morphism rounded-full px-2 py-2 flex items-center gap-4 shadow-[0_15px_30px_-5px_rgba(244,114,182,0.3)] border border-white/50 ring-2 ring-pink-200/50 cursor-pointer hover:ring-pink-300 transition" onclick="scrollToCart()">
         <div class="pl-4 pr-1 py-1">
             <span class="text-xs text-pink-600 font-bold block mb-0.5" id="floating-cart-count">已選 0 項</span>
             <span class="text-xl font-black text-pink-900" id="floating-cart-total">NT$ 0</span>
@@ -258,6 +288,37 @@
   </div>
 
   <script>
+    // ================= 櫻花飄落特效 JS =================
+    function createSakura() {
+      const container = document.createElement('div');
+      container.className = 'sakura-container';
+      document.body.appendChild(container);
+
+      const petalCount = 35; // 花瓣數量
+      
+      for (let i = 0; i < petalCount; i++) {
+        const petal = document.createElement('div');
+        petal.className = 'sakura-petal';
+        
+        const size = Math.random() * 10 + 8;
+        const startPositionLeft = Math.random() * 100;
+        const fallDuration = Math.random() * 5 + 6;
+        const swayDuration = Math.random() * 2 + 2;
+        const delay = Math.random() * 7;
+
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size * 1.3}px`;
+        petal.style.left = `${startPositionLeft}vw`;
+        petal.style.animationDuration = `${fallDuration}s, ${swayDuration}s`;
+        petal.style.animationDelay = `${delay}s, ${delay}s`;
+
+        container.appendChild(petal);
+      }
+    }
+    // 當網頁 HTML 載入完成後啟動櫻花特效
+    document.addEventListener('DOMContentLoaded', createSakura);
+    // ====================================================
+
     let currentUsername = null;
     let cart = { lunch: null, drink: null }; 
     let configuringItem = null; 
@@ -339,7 +400,6 @@
           const btn = document.getElementById('login-btn');
           btn.disabled = true;
           btn.textContent = `已超過截單時間 (${res.cutoffStr})`;
-          // 【修改】JS 內的樣式替換也一併改為 pink
           btn.classList.replace('bg-pink-600', 'bg-gray-500');
           btn.classList.replace('hover:bg-pink-700', 'hover:bg-gray-500');
         }
@@ -425,9 +485,7 @@
       if (item.options && Object.keys(item.options).length > 0) { configuringItem = item; openOptionsModal(item); } 
       else {
         cart[item.category] = { id: item.id, name: item.name, price: item.price, selections: {} };
-        updateCartUI(); 
-        // 【修改】提示改為粉色
-        showMessage(`已選擇：${item.name}`, "bg-pink-100 text-pink-700");
+        updateCartUI(); showMessage(`已選擇：${item.name}`, "bg-pink-100 text-pink-700");
       }
     }
 
@@ -528,7 +586,6 @@
         cartSummary.scrollIntoView({ behavior: 'smooth', block: 'end' });
         const btn = document.getElementById('submit-button');
         setTimeout(() => {
-          // 【修改】閃爍動畫改為粉色
           btn.classList.add('ring-4', 'ring-pink-400', 'scale-105');
           setTimeout(() => btn.classList.remove('ring-4', 'ring-pink-400', 'scale-105'), 600);
         }, 300);
@@ -582,7 +639,6 @@
     function switchAdminTab(tabName) {
       ['orders', 'summary', 'menu', 'settings'].forEach(t => {
          document.getElementById(`admin-tab-${t}`).classList.add('hidden');
-         // 【修改】Tab 按鈕切換顏色
          document.getElementById(`tab-btn-${t}`).classList.replace('text-pink-600', 'text-gray-500');
          document.getElementById(`tab-btn-${t}`).classList.remove('border-pink-600');
       });
@@ -602,7 +658,6 @@
       runGas('getAdminOrders', res => {
         if(res.length===0) { div.innerHTML='<p class="text-center">無資料</p>'; return; }
         div.innerHTML = res.map(o => {
-          // 【修改】已繳費的按鈕改為粉色
           const statusClass = o.paid ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-500';
           const cardBorder = o.hasOrdered ? 'border-pink-300' : 'border-gray-200 opacity-60';
           return `
@@ -657,7 +712,6 @@
       const isPaid = btn.innerText === '已繳費';
       const card = btn.closest('.admin-order-card');
       btn.innerText = isPaid ? '未繳費' : '已繳費';
-      // 【修改】切換已繳費的按鈕改為粉色
       btn.className = `px-3 py-1 rounded-full text-xs font-bold transition ${isPaid ? 'bg-gray-200 text-gray-500' : 'bg-pink-500 text-white'}`;
       card.dataset.paid = (!isPaid).toString(); 
       runGas('togglePaymentStatus', ()=>{}, showGasError, rowIndex, isPaid);
@@ -693,7 +747,6 @@
       const btnL = document.getElementById('summary-btn-lunch');
       const btnD = document.getElementById('summary-btn-drink');
       
-      // 【修改】後台按鈕的粉紅色切換
       if (type === 'lunch') {
         btnL.className = "flex-1 py-2 bg-white rounded shadow text-pink-600 font-bold transition";
         btnD.className = "flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition";
@@ -739,7 +792,6 @@
       const btnL = document.getElementById('menu-tab-lunch');
       const btnD = document.getElementById('menu-tab-drink');
       
-      // 【修改】菜單編輯按鈕的粉色切換
       if (category === 'lunch') {
         btnL.className = "flex-1 py-2 bg-white rounded shadow text-pink-600 font-bold transition";
         btnD.className = "flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition";
