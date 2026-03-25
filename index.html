@@ -21,7 +21,6 @@
     .menu-card:active { transform: scale(0.98); }
     .img-container img { transition: transform 0.3s ease; }
     .menu-card:hover .img-container img { transform: scale(1.05); }
-    
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   </style>
@@ -57,9 +56,7 @@
           <div class="flex justify-between items-center">
               <h2 class="text-2xl font-bold text-gray-700">今日菜單</h2>
           </div>
-          
           <div id="loading-message" class="text-center text-gray-400 p-8 hidden"><div class="loading-spinner border-4 border-gray-200 border-t-green-500 inline-block"></div> 正在載入資料...</div>
-          
           <div id="menu-container" class="space-y-8 transition-opacity duration-300">
             <div>
               <h3 id="lunch-title" class="text-xl font-bold text-orange-600 border-b pb-2 mb-4">🍝 午餐 (擇一)</h3>
@@ -70,12 +67,10 @@
               <div id="drink-list" class="grid grid-cols-1 gap-4"></div>
             </div>
           </div>
-
           <div id="cart-summary" class="pt-6 border-t border-gray-200 space-y-4">
               <h3 class="text-xl font-bold text-gray-700">已選內容 / 點餐紀錄</h3>
               <div id="cart-list" class="space-y-3"><p class="text-sm text-gray-500">尚未選擇。</p></div>
           </div>
-          
           <div class="pt-6 border-t border-green-200 space-y-4">
               <div class="flex justify-between items-center text-3xl font-extrabold"><span>總計:</span><span id="total-price" class="text-red-600">NT$ 0</span></div>
               <button id="submit-button" onclick="submitOrder()" disabled class="w-full py-4 px-4 bg-green-500 text-white font-bold text-lg rounded-xl shadow-xl hover:bg-green-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">請選擇餐點</button>
@@ -111,7 +106,7 @@
   <div id="pwd-modal" class="modal-overlay hidden">
     <div class="bg-white rounded-xl shadow-2xl p-6 space-y-6 w-80 text-center">
       <h2 class="text-2xl font-bold text-red-700 border-b pb-2">管理員登入</h2>
-      <input type="password" id="admin-pwd-input" placeholder="請輸入系統密碼" class="w-full p-3 border rounded-lg text-center font-bold">
+      <input type="password" id="admin-pwd-input" placeholder="請輸入密碼 (預設: 0000)" class="w-full p-3 border rounded-lg text-center font-bold">
       <div class="flex justify-end gap-3 pt-2">
         <button onclick="closeAdminPwdModal()" class="flex-1 py-2 bg-gray-200 rounded-lg font-bold">取消</button>
         <button id="pwd-submit-btn" onclick="verifyAdmin()" class="flex-1 py-2 bg-red-600 text-white rounded-lg font-bold">確認</button>
@@ -152,6 +147,7 @@
         <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="px-4 py-3 text-red-600 border-b-2 border-red-600 font-bold whitespace-nowrap">名單對帳</button>
         <button onclick="switchAdminTab('summary')" id="tab-btn-summary" class="px-4 py-3 text-gray-500 whitespace-nowrap">訂購統計</button>
         <button onclick="switchAdminTab('menu')" id="tab-btn-menu" class="px-4 py-3 text-gray-500 whitespace-nowrap">📝 菜單編輯</button>
+        <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="px-4 py-3 text-gray-500 whitespace-nowrap">⚙️ 系統設定</button>
       </div>
     </div>
     
@@ -159,9 +155,18 @@
         <div class="max-w-4xl mx-auto space-y-6">
           
           <div id="admin-tab-orders" class="space-y-4">
-              <div class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border">
-                <input type="text" id="order-search-input" oninput="filterOrders()" placeholder="🔍 搜尋姓名..." class="p-2 border rounded-lg outline-none">
-                <button onclick="confirmResetOrders()" class="bg-red-600 text-white px-4 py-2 rounded shadow text-sm font-bold">⚠️ 清空紀錄</button>
+              <div class="bg-white p-3 rounded-lg shadow-sm border space-y-3">
+                  <div class="flex justify-between items-center gap-2">
+                      <input type="text" id="order-search-input" oninput="applyOrderFilters()" placeholder="🔍 搜尋姓名..." class="p-2 border rounded-lg outline-none flex-grow">
+                      <button onclick="confirmResetOrders()" class="bg-red-600 text-white px-3 py-2 rounded shadow text-sm font-bold flex-shrink-0">⚠️ 清空</button>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 border-t pt-3">
+                      <button onclick="setOrderFilter('all')" id="filter-btn-all" class="px-3 py-1 bg-gray-800 text-white rounded shadow text-sm font-bold">全部</button>
+                      <button onclick="setOrderFilter('unordered')" id="filter-btn-unordered" class="px-3 py-1 bg-gray-200 text-gray-700 rounded shadow text-sm font-bold hover:bg-gray-300">未點餐</button>
+                      <button onclick="setOrderFilter('unpaid')" id="filter-btn-unpaid" class="px-3 py-1 bg-gray-200 text-gray-700 rounded shadow text-sm font-bold hover:bg-gray-300">未繳費</button>
+                      <div class="flex-grow"></div>
+                      <button onclick="copyUnpaidList()" class="px-3 py-1 bg-yellow-500 text-white rounded shadow text-sm font-bold hover:bg-yellow-600 transition">📋 複製催繳名單</button>
+                  </div>
               </div>
               <div id="admin-order-list" class="space-y-2 pb-10"></div>
           </div>
@@ -186,66 +191,51 @@
               <button id="menu-tab-lunch" onclick="renderAdminMenuList('lunch')" class="flex-1 py-2 bg-white rounded shadow text-orange-600 font-bold transition">午餐菜單</button>
               <button id="menu-tab-drink" onclick="renderAdminMenuList('drink')" class="flex-1 py-2 text-gray-500 hover:bg-gray-300 rounded font-bold transition">飲料菜單</button>
             </div>
-            
             <div class="flex justify-between items-center mb-2">
               <h3 id="admin-menu-title" class="font-bold text-gray-700 text-lg">編輯清單</h3>
               <button onclick="openMenuEditorModal(-1)" class="bg-green-600 text-white px-3 py-1.5 rounded-lg shadow text-sm font-bold hover:bg-green-700">+ 新增品項</button>
             </div>
-
             <div id="admin-menu-list-container" class="space-y-3"></div>
-
             <button id="save-menu-server-btn" onclick="saveMenuToServer()" class="w-full py-4 mt-6 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-2">
               ☁️ 將此分類儲存至雲端試算表
             </button>
           </div>
 
+          <div id="admin-tab-settings" class="hidden space-y-4 pb-10">
+              </div>
+
         </div>
     </div>
   </section>
 
-  <div id="menu-editor-modal" class="modal-overlay hidden">
+  <div id="menu-editor-modal" class="modal-overlay hidden z-[10000]">
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[95vh] relative">
       <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
         <h2 id="editor-modal-title" class="text-xl font-bold text-gray-800">編輯品項</h2>
         <button onclick="closeMenuEditorModal()" class="text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none">&times;</button>
       </div>
-      
       <div class="p-5 overflow-y-auto space-y-4 flex-grow">
         <div class="space-y-3">
-          <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">品項名稱 <span class="text-red-500">*</span></label>
-            <input type="text" id="edit-item-name" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300">
-          </div>
-          <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">基本價格 <span class="text-red-500">*</span></label>
-            <input type="number" id="edit-item-price" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300" placeholder="0">
-          </div>
-          <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">圖片網址 (選填)</label>
-            <input type="text" id="edit-item-image" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300 text-sm" placeholder="https://...">
-          </div>
+          <div><label class="block text-sm font-bold text-gray-700 mb-1">品項名稱 <span class="text-red-500">*</span></label><input type="text" id="edit-item-name" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300"></div>
+          <div><label class="block text-sm font-bold text-gray-700 mb-1">基本價格 <span class="text-red-500">*</span></label><input type="number" id="edit-item-price" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300" placeholder="0"></div>
+          <div><label class="block text-sm font-bold text-gray-700 mb-1">圖片網址 (選填)</label><input type="text" id="edit-item-image" class="w-full p-2 border rounded-lg outline-none focus:ring-2 ring-blue-300 text-sm" placeholder="https://..."></div>
         </div>
-
         <hr>
-
         <div>
           <div class="flex justify-between items-center mb-2">
             <label class="block text-base font-bold text-indigo-700">🛒 加購與客製化選項</label>
             <button onclick="addOptionGroup()" class="text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded font-bold hover:bg-indigo-200">+ 新增群組</button>
           </div>
           <p class="text-xs text-gray-500 mb-3">例如：新增「甜度」群組，裡面包含「正常(+0)」、「半糖(+0)」</p>
-          
           <div id="options-builder-container" class="space-y-3"></div>
         </div>
       </div>
-
       <div class="p-4 border-t bg-gray-50 flex gap-3 rounded-b-xl">
         <button onclick="closeMenuEditorModal()" class="flex-1 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300">取消</button>
         <button onclick="saveItemToLocalData()" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md">暫存品項</button>
       </div>
     </div>
   </div>
-
 
   <script>
     let currentUsername = null;
@@ -259,6 +249,7 @@
     let currentMenuTab = 'lunch';
     let editingItemIndex = -1; 
     let currentEditOptions = {};
+    let currentOrderFilter = 'all'; // 預設顯示全部名單
 
     function showConfirmModal(msg, cb, isDanger=false) {
         document.getElementById('system-modal-message').textContent = msg;
@@ -339,7 +330,6 @@
       const btn = document.getElementById('login-btn');
       btn.disabled = true; btn.textContent = "驗證中...";
       const username = e.target.username.value.trim();
-      
       runGas('checkUserLogin', res => {
         btn.disabled = false; btn.textContent = "進入點餐";
         if(res.success){
@@ -357,18 +347,12 @@
                   <p class="text-sm"><span class="font-bold text-gray-700">午餐：</span> ${res.lunch}</p>
                   <p class="text-sm"><span class="font-bold text-gray-700">飲料：</span> ${res.drink}</p>
                 </div>
-              </div>
-            `;
+              </div>`;
             document.getElementById('total-price').textContent = `NT$ ${res.total}`;
             const submitBtn = document.getElementById('submit-button');
-            submitBtn.disabled = true;
-            submitBtn.textContent = "已完成點餐";
-          } else {
-            loadMenu();
-          }
-        } else { 
-          showMessage(res.message, "bg-red-100 text-red-700"); 
-        }
+            submitBtn.disabled = true; submitBtn.textContent = "已完成點餐";
+          } else { loadMenu(); }
+        } else { showMessage(res.message, "bg-red-100 text-red-700"); }
       }, showGasError, username);
     }
 
@@ -396,10 +380,7 @@
       if(items.length === 0) { container.innerHTML = '<p class="text-gray-400 text-sm">無供應</p>'; return; }
       const themeColor = category === 'lunch' ? 'orange' : 'teal';
       const html = items.map(item => {
-        const imgHtml = item.image 
-          ? `<img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">`
-          : `<div class="w-full h-full bg-gray-100 flex items-center justify-center text-3xl opacity-50">🍽️</div>`;
-          
+        const imgHtml = item.image ? `<img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-100 flex items-center justify-center text-3xl opacity-50">🍽️</div>`;
         return `
         <div class="menu-card flex p-3 rounded-xl shadow-sm hover:shadow-md ring-1 ring-gray-200 bg-white gap-3 cursor-pointer" onclick="handleItemClick('${item.id}')">
           <div class="img-container flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-gray-100 relative shadow-sm">
@@ -412,8 +393,7 @@
             <div><h3 class="text-lg font-bold text-gray-800 leading-tight">${item.name}</h3></div>
             <div class="flex justify-between items-end mt-2"><span class="text-lg font-extrabold text-gray-800">NT$ ${item.price}</span></div>
           </div>
-        </div>
-        `;
+        </div>`;
       }).join('');
       container.innerHTML = html;
     }
@@ -421,14 +401,10 @@
     function handleItemClick(id) {
       const item = window.menuData.find(i => i.id === id);
       if (!item) return;
-      
-      if (item.options && Object.keys(item.options).length > 0) {
-        configuringItem = item;
-        openOptionsModal(item);
-      } else {
+      if (item.options && Object.keys(item.options).length > 0) { configuringItem = item; openOptionsModal(item); } 
+      else {
         cart[item.category] = { id: item.id, name: item.name, price: item.price, selections: {} };
-        updateCartUI();
-        showMessage(`已選擇：${item.name}`, "bg-green-100 text-green-700");
+        updateCartUI(); showMessage(`已選擇：${item.name}`, "bg-green-100 text-green-700");
       }
     }
 
@@ -440,41 +416,25 @@
       const titleNoImg = document.getElementById('modal-title-no-img');
 
       if (item.image) {
-        imgElement.src = item.image;
-        imgContainer.classList.remove('hidden');     
-        headerNoImg.classList.add('hidden');         
-        titleWithImg.textContent = item.name;
-        titleWithImg.classList.remove('hidden');     
+        imgElement.src = item.image; imgContainer.classList.remove('hidden'); headerNoImg.classList.add('hidden');         
+        titleWithImg.textContent = item.name; titleWithImg.classList.remove('hidden');     
       } else {
-        imgContainer.classList.add('hidden');        
-        headerNoImg.classList.remove('hidden');      
-        titleNoImg.textContent = item.name;
-        titleWithImg.classList.add('hidden');        
+        imgContainer.classList.add('hidden'); headerNoImg.classList.remove('hidden');      
+        titleNoImg.textContent = item.name; titleWithImg.classList.add('hidden');        
       }
       
-      const content = document.getElementById('modal-content');
-      content.innerHTML = '';
-      
+      const content = document.getElementById('modal-content'); content.innerHTML = '';
       Object.keys(item.options).forEach(optionName => {
         const options = item.options[optionName];
         let optionsHtml = options.map((opt, index) => {
           const name = Array.isArray(opt) ? opt[0] : opt;
           const extraPrice = Array.isArray(opt) ? opt[1] : 0;
           const priceLabel = extraPrice > 0 ? ` (+NT$${extraPrice})` : '';
-          
-          return `
-            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition">
-              <input type="radio" name="option-${optionName}" value="${name}" data-extra="${extraPrice}"
-                     onchange="checkModalSelections()" class="form-radio h-5 w-5 text-indigo-600">
-              <span class="ml-3 text-gray-700 font-medium">${name}${priceLabel}</span>
-            </label>
-          `;
+          return `<label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition"><input type="radio" name="option-${optionName}" value="${name}" data-extra="${extraPrice}" onchange="checkModalSelections()" class="form-radio h-5 w-5 text-indigo-600"><span class="ml-3 text-gray-700 font-medium">${name}${priceLabel}</span></label>`;
         }).join('');
         content.insertAdjacentHTML('beforeend', `<div><h4 class="text-lg font-bold mb-2 text-gray-800">${optionName} <span class="text-red-500 text-xs font-normal ml-1">* 必選</span></h4><div class="space-y-2">${optionsHtml}</div></div>`);
       });
-      
-      checkModalSelections();
-      document.getElementById('options-modal').classList.remove('hidden');
+      checkModalSelections(); document.getElementById('options-modal').classList.remove('hidden');
     }
 
     function closeOptionsModal() { document.getElementById('options-modal').classList.add('hidden'); configuringItem = null; }
@@ -484,32 +444,21 @@
       let extraTotal = 0; let allSelected = true;
       Object.keys(configuringItem.options).forEach(category => {
         const selected = document.querySelector(`input[name="option-${category}"]:checked`);
-        if (!selected) allSelected = false;
-        else extraTotal += parseFloat(selected.dataset.extra || 0);
+        if (!selected) allSelected = false; else extraTotal += parseFloat(selected.dataset.extra || 0);
       });
       const btn = document.getElementById('add-to-cart-btn');
-      if (allSelected) {
-        btn.disabled = false; btn.textContent = `加入購物車 (NT$${configuringItem.price + extraTotal})`;
-      } else {
-        btn.disabled = true; btn.textContent = `您有選項尚未完成`;
-      }
+      if (allSelected) { btn.disabled = false; btn.textContent = `加入購物車 (NT$${configuringItem.price + extraTotal})`; } 
+      else { btn.disabled = true; btn.textContent = `您有選項尚未完成`; }
     }
 
     function confirmOptions() {
       if (!configuringItem) return;
       let extraTotal = 0; const selections = {};
       document.querySelectorAll('#modal-content input[type="radio"]:checked').forEach(radio => {
-        const cat = radio.name.replace('option-', '');
-        selections[cat] = radio.value;
-        extraTotal += parseFloat(radio.dataset.extra || 0);
+        const cat = radio.name.replace('option-', ''); selections[cat] = radio.value; extraTotal += parseFloat(radio.dataset.extra || 0);
       });
-      cart[configuringItem.category] = {
-        id: configuringItem.id, name: configuringItem.name, price: configuringItem.price + extraTotal,
-        selections: selections
-      };
-      updateCartUI();
-      showMessage(`已選擇：${configuringItem.name}`, "bg-green-100 text-green-700");
-      closeOptionsModal();
+      cart[configuringItem.category] = { id: configuringItem.id, name: configuringItem.name, price: configuringItem.price + extraTotal, selections: selections };
+      updateCartUI(); showMessage(`已選擇：${configuringItem.name}`, "bg-green-100 text-green-700"); closeOptionsModal();
     }
 
     function removeCartItem(category) { cart[category] = null; updateCartUI(); }
@@ -518,24 +467,18 @@
       const listDiv = document.getElementById('cart-list');
       const items = [cart.lunch, cart.drink].filter(i => i !== null);
       let total = 0;
-      if(items.length === 0) {
-        listDiv.innerHTML = '<p class="text-sm text-gray-500">尚未選擇。</p>';
-      } else {
+      if(items.length === 0) { listDiv.innerHTML = '<p class="text-sm text-gray-500">尚未選擇。</p>'; } 
+      else {
         listDiv.innerHTML = items.map(item => {
           total += item.price;
           const cat = item.category || (item.id.startsWith('lunch') ? 'lunch' : 'drink');
           let details = item.selections && Object.keys(item.selections).length > 0 ? `<p class="text-xs text-gray-500 mt-1">${Object.values(item.selections).join(' / ')}</p>` : '';
-          return `
-            <div class="flex items-center justify-between p-3 bg-white border-b ring-1 ring-gray-100 rounded-lg shadow-sm">
-              <div><p class="font-bold text-gray-700">${item.name}</p>${details}<p class="text-sm text-red-500 font-medium mt-1">NT$ ${item.price}</p></div>
-              <button onclick="removeCartItem('${cat}')" class="text-gray-400 hover:text-red-600 text-2xl font-bold px-2 remove-btn">&times;</button>
-            </div>`;
+          return `<div class="flex items-center justify-between p-3 bg-white border-b ring-1 ring-gray-100 rounded-lg shadow-sm"><div><p class="font-bold text-gray-700">${item.name}</p>${details}<p class="text-sm text-red-500 font-medium mt-1">NT$ ${item.price}</p></div><button onclick="removeCartItem('${cat}')" class="text-gray-400 hover:text-red-600 text-2xl font-bold px-2 remove-btn">&times;</button></div>`;
         }).join('');
       }
       document.getElementById('total-price').textContent = `NT$ ${total}`;
       const btn = document.getElementById('submit-button');
-      btn.disabled = items.length === 0;
-      btn.textContent = items.length === 0 ? "請選擇餐點" : "確認點餐並提交";
+      btn.disabled = items.length === 0; btn.textContent = items.length === 0 ? "請選擇餐點" : "確認點餐並提交";
     }
 
     function submitOrder() {
@@ -550,12 +493,12 @@
           document.getElementById('menu-container').classList.add('pointer-events-none', 'opacity-50');
           document.querySelectorAll('.remove-btn').forEach(b => b.classList.add('hidden'));
         } else {
-          showAlertModal(res.message);
-          btn.disabled = false; btn.textContent = "確認點餐並提交";
+          showAlertModal(res.message); btn.disabled = false; btn.textContent = "確認點餐並提交";
         }
       }, showGasError, { username: currentUsername, lunch: cart.lunch, drink: cart.drink, total: items.reduce((sum, i) => sum + i.price, 0) });
     }
 
+    // --- 後台管理系統 ---
     function openAdminPwdModal() { 
       document.getElementById('admin-pwd-input').value = "";
       document.getElementById('pwd-modal').classList.remove('hidden'); 
@@ -583,7 +526,7 @@
     }
 
     function switchAdminTab(tabName) {
-      ['orders', 'summary', 'menu'].forEach(t => {
+      ['orders', 'summary', 'menu', 'settings'].forEach(t => {
          document.getElementById(`admin-tab-${t}`).classList.add('hidden');
          document.getElementById(`tab-btn-${t}`).classList.replace('text-red-600', 'text-gray-500');
          document.getElementById(`tab-btn-${t}`).classList.remove('border-red-600');
@@ -595,6 +538,7 @@
       if (tabName === 'orders') loadAdminOrders();
       if (tabName === 'summary') loadAdminSummary();
       if (tabName === 'menu') loadAdminMenuEditor(); 
+      if (tabName === 'settings') loadAdminSettings(); // 載入系統設定
     }
 
     function loadAdminOrders() {
@@ -602,11 +546,12 @@
       div.innerHTML = '<p class="text-center text-gray-400">載入中...</p>';
       runGas('getAdminOrders', res => {
         if(res.length===0) { div.innerHTML='<p class="text-center">無資料</p>'; return; }
+        // 【修改】將是否點餐、繳費狀態綁定在 data 屬性上，方便 JS 過濾
         div.innerHTML = res.map(o => {
           const statusClass = o.paid ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500';
           const cardBorder = o.hasOrdered ? 'border-green-300' : 'border-gray-200 opacity-60';
           return `
-            <div class="bg-white border-2 ${cardBorder} p-3 rounded shadow-sm">
+            <div class="bg-white border-2 ${cardBorder} p-3 rounded shadow-sm admin-order-card" data-name="${o.user}" data-has-ordered="${o.hasOrdered}" data-paid="${o.paid}">
               <div class="flex justify-between items-center border-b pb-2 mb-2">
                 <span class="font-bold text-lg">${o.user}</span>
                 ${o.hasOrdered ? `<button onclick="togglePay(this, ${o.rowIndex})" class="px-3 py-1 rounded-full text-xs font-bold transition ${statusClass}">${o.paid?'已繳費':'未繳費'}</button>` : '<span class="text-xs text-gray-400">尚未點餐</span>'}
@@ -615,23 +560,73 @@
               ${o.hasOrdered ? `<div class="text-right font-bold text-red-600 mt-2">總計: $${o.total}</div>` : ''}
             </div>`;
         }).join('');
+        applyOrderFilters(); // 載入後自動套用目前的過濾器
       }, showGasError);
     }
 
-    function filterOrders() {
-      const filter = document.getElementById('order-search-input').value.toUpperCase();
-      const cards = document.getElementById('admin-order-list').children;
-      for (let i = 0; i < cards.length; i++) {
-        const name = cards[i].querySelector('.font-bold.text-lg').innerText;
-        cards[i].classList.toggle('hidden', name.toUpperCase().indexOf(filter) === -1);
-      }
+    // 【新增】過濾器邏輯
+    function setOrderFilter(type) {
+        currentOrderFilter = type;
+        ['all', 'unordered', 'unpaid'].forEach(t => {
+            const btn = document.getElementById(`filter-btn-${t}`);
+            if (t === type) {
+                btn.classList.replace('bg-gray-200', 'bg-gray-800');
+                btn.classList.replace('text-gray-700', 'text-white');
+            } else {
+                btn.classList.replace('bg-gray-800', 'bg-gray-200');
+                btn.classList.replace('text-white', 'text-gray-700');
+            }
+        });
+        applyOrderFilters();
+    }
+
+    function applyOrderFilters() {
+        const filterText = document.getElementById('order-search-input').value.toUpperCase();
+        const cards = document.querySelectorAll('.admin-order-card');
+        cards.forEach(card => {
+            const name = card.dataset.name.toUpperCase();
+            const hasOrdered = card.dataset.hasOrdered === 'true';
+            const isPaid = card.dataset.paid === 'true';
+            
+            let textMatch = name.includes(filterText);
+            let stateMatch = true;
+            
+            if (currentOrderFilter === 'unordered') stateMatch = !hasOrdered;
+            if (currentOrderFilter === 'unpaid') stateMatch = hasOrdered && !isPaid;
+            
+            if (textMatch && stateMatch) card.classList.remove('hidden');
+            else card.classList.add('hidden');
+        });
     }
 
     function togglePay(btn, rowIndex) {
       const isPaid = btn.innerText === '已繳費';
+      const card = btn.closest('.admin-order-card');
       btn.innerText = isPaid ? '未繳費' : '已繳費';
       btn.className = `px-3 py-1 rounded-full text-xs font-bold transition ${isPaid ? 'bg-gray-200 text-gray-500' : 'bg-green-500 text-white'}`;
+      card.dataset.paid = (!isPaid).toString(); // 更新狀態 (但不馬上隱藏，避免畫面亂跳)
       runGas('togglePaymentStatus', ()=>{}, showGasError, rowIndex, isPaid);
+    }
+
+    // 【新增】複製未繳費名單
+    function copyUnpaidList() {
+        const cards = document.querySelectorAll('.admin-order-card');
+        let unpaidNames = [];
+        cards.forEach(card => {
+            if (card.dataset.hasOrdered === 'true' && card.dataset.paid === 'false') {
+                unpaidNames.push(card.dataset.name);
+            }
+        });
+        if (unpaidNames.length === 0) {
+            showAlertModal("太棒了！目前大家都已經繳費囉。");
+            return;
+        }
+        const textToCopy = `【點餐未繳費名單】\n${unpaidNames.join('、')}\n\n麻煩以上同學盡快繳交費用喔！謝謝～`;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showAlertModal("✅ 催繳名單已複製！\n您可以直接貼上至 LINE 班級群組。");
+        }).catch(err => {
+            showConfirmModal("複製失敗，請手動複製以下文字：\n\n" + textToCopy, null);
+        });
     }
 
     function loadAdminSummary() {
@@ -782,10 +777,7 @@
             </div>`;
         });
 
-        html += `
-            </div>
-            <button onclick="addOptionItem('${groupName}')" class="mt-3 text-sm text-indigo-600 font-bold hover:bg-indigo-50 px-2 py-1 rounded flex items-center gap-1">➕ 新增選項</button>
-          </div>`;
+        html += `</div><button onclick="addOptionItem('${groupName}')" class="mt-3 text-sm text-indigo-600 font-bold hover:bg-indigo-50 px-2 py-1 rounded flex items-center gap-1">➕ 新增選項</button></div>`;
       });
       container.innerHTML = html;
     }
@@ -800,8 +792,7 @@
     
     function deleteOptionGroup(groupName) {
       if(confirm(`確定刪除「${groupName}」整個群組嗎？`)) {
-        delete currentEditOptions[groupName];
-        renderOptionsBuilderUI();
+        delete currentEditOptions[groupName]; renderOptionsBuilderUI();
       }
     }
 
@@ -814,30 +805,20 @@
         if(key === oldName) newObj[newName] = currentEditOptions[key];
         else newObj[key] = currentEditOptions[key];
       }
-      currentEditOptions = newObj;
-      renderOptionsBuilderUI();
+      currentEditOptions = newObj; renderOptionsBuilderUI();
     }
 
-    function addOptionItem(groupName) {
-      currentEditOptions[groupName].push(["新選項", 0]);
-      renderOptionsBuilderUI();
-    }
+    function addOptionItem(groupName) { currentEditOptions[groupName].push(["新選項", 0]); renderOptionsBuilderUI(); }
 
     function updateOptionItem(groupName, index, field, value) {
       let opt = currentEditOptions[groupName][index];
-      let name = Array.isArray(opt) ? opt[0] : opt;
-      let price = Array.isArray(opt) ? opt[1] : 0;
-
+      let name = Array.isArray(opt) ? opt[0] : opt; let price = Array.isArray(opt) ? opt[1] : 0;
       if (field === 'name') name = value.trim() || "未命名";
       if (field === 'price') price = parseInt(value) || 0;
-      
       currentEditOptions[groupName][index] = [name, price];
     }
 
-    function deleteOptionItem(groupName, index) {
-      currentEditOptions[groupName].splice(index, 1);
-      renderOptionsBuilderUI();
-    }
+    function deleteOptionItem(groupName, index) { currentEditOptions[groupName].splice(index, 1); renderOptionsBuilderUI(); }
 
     function saveItemToLocalData() {
       const name = document.getElementById('edit-item-name').value.trim();
@@ -845,48 +826,106 @@
       const image = document.getElementById('edit-item-image').value.trim();
 
       if (!name) return alert("請輸入品項名稱！");
-
       const finalOptions = {};
       for(let key in currentEditOptions) {
         if (currentEditOptions[key].length > 0) {
           finalOptions[key] = currentEditOptions[key].map(opt => {
-            const optName = Array.isArray(opt) ? opt[0] : opt;
-            const optPrice = Array.isArray(opt) ? opt[1] : 0;
+            const optName = Array.isArray(opt) ? opt[0] : opt; const optPrice = Array.isArray(opt) ? opt[1] : 0;
             return optPrice === 0 ? optName : [optName, optPrice];
           });
         }
       }
-
       const newItem = { id: `temp-${Date.now()}`, name, price, image, options: finalOptions, category: currentMenuTab };
-
-      if (editingItemIndex === -1) {
-        adminMenuData[currentMenuTab].push(newItem);
-      } else {
-        adminMenuData[currentMenuTab][editingItemIndex] = newItem;
-      }
+      if (editingItemIndex === -1) adminMenuData[currentMenuTab].push(newItem);
+      else adminMenuData[currentMenuTab][editingItemIndex] = newItem;
       
-      closeMenuEditorModal();
-      renderAdminMenuList(currentMenuTab);
+      closeMenuEditorModal(); renderAdminMenuList(currentMenuTab);
     }
 
     function deleteMenuItemFromLocal(index) {
       if(confirm("確定要刪除這個品項嗎？ (刪除後需點擊「儲存至雲端」才會真正生效)")) {
-        adminMenuData[currentMenuTab].splice(index, 1);
-        renderAdminMenuList(currentMenuTab);
+        adminMenuData[currentMenuTab].splice(index, 1); renderAdminMenuList(currentMenuTab);
       }
     }
 
     function saveMenuToServer() {
       const btn = document.getElementById('save-menu-server-btn');
-      btn.disabled = true;
-      btn.innerHTML = `<div class="loading-spinner border-white border-t-transparent w-5 h-5 inline-block"></div> 正在同步至試算表...`;
-      
+      btn.disabled = true; btn.innerHTML = `<div class="loading-spinner border-white border-t-transparent w-5 h-5 inline-block"></div> 正在同步至試算表...`;
       runGas('saveMenuData', res => {
-        btn.disabled = false;
-        btn.innerHTML = `☁️ 將此分類儲存至雲端試算表`;
-        if (res.success) showAlertModal(res.message);
-        else showAlertModal(res.message);
+        btn.disabled = false; btn.innerHTML = `☁️ 將此分類儲存至雲端試算表`;
+        if (res.success) showAlertModal(res.message); else showAlertModal(res.message);
       }, showGasError, currentMenuTab, adminMenuData[currentMenuTab]);
+    }
+
+    // ==========================================
+    // 【新增】後台系統設定功能
+    // ==========================================
+    function loadAdminSettings() {
+        document.getElementById('admin-tab-settings').innerHTML = '<p class="text-center p-8 text-gray-500">載入設定中...</p>';
+        runGas('getAdminSettings', res => {
+            if (res.error) { showGasError(res); return; }
+            document.getElementById('admin-tab-settings').innerHTML = `
+                <div class="bg-white p-5 rounded-lg shadow-sm border space-y-4">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">截單時間 (超過此時間自動關閉點餐)</label>
+                        <input type="datetime-local" id="set-cutoff" value="${res.cutoff}" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">跑馬燈公告</label>
+                        <input type="text" id="set-ann" value="${res.ann}" placeholder="例如：本週五前請完成點餐喔！" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="block font-bold text-gray-700 mb-1">午餐店名</label>
+                            <input type="text" id="set-lunch" value="${res.lunchStore}" placeholder="例如: 麥當勞" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block font-bold text-gray-700 mb-1">飲料店名</label>
+                            <input type="text" id="set-drink" value="${res.drinkStore}" placeholder="例如: 50嵐" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                        </div>
+                    </div>
+                    <hr class="my-4 border-gray-200">
+                    <div>
+                        <label class="block font-bold text-red-600 mb-1">🔑 後台管理員密碼</label>
+                        <input type="text" id="set-pwd" value="${res.pwd}" class="w-full p-2 border border-red-200 rounded focus:ring-2 focus:ring-red-300 outline-none text-red-600 font-bold">
+                        <p class="text-xs text-gray-400 mt-1">預設為 0000，修改後請務必牢記</p>
+                    </div>
+                    <button onclick="saveAdminSettingsUI()" class="w-full py-3 mt-4 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition">💾 儲存所有設定</button>
+                </div>
+            `;
+        }, showGasError);
+    }
+
+    function saveAdminSettingsUI() {
+        const data = {
+            cutoff: document.getElementById('set-cutoff').value,
+            ann: document.getElementById('set-ann').value,
+            lunchStore: document.getElementById('set-lunch').value,
+            drinkStore: document.getElementById('set-drink').value,
+            pwd: document.getElementById('set-pwd').value
+        };
+        const btn = document.querySelector('#admin-tab-settings button');
+        btn.disabled = true; btn.textContent = "儲存中...";
+        
+        runGas('saveSystemSettings', res => {
+            if(res.success) {
+                showAlertModal(res.message);
+                
+                // 即時更新畫面上所有與店名相關的文字
+                storeNames.lunch = data.lunchStore || '午餐';
+                storeNames.drink = data.drinkStore || '飲料';
+                document.getElementById('lunch-title').textContent = `🍝 ${storeNames.lunch} (擇一)`;
+                document.getElementById('drink-title').textContent = `🥤 ${storeNames.drink} (擇一)`;
+                document.getElementById('summary-btn-lunch').textContent = `${storeNames.lunch}統計`;
+                document.getElementById('summary-btn-drink').textContent = `${storeNames.drink}統計`;
+                document.getElementById('menu-tab-lunch').textContent = `${storeNames.lunch}菜單`;
+                document.getElementById('menu-tab-drink').textContent = `${storeNames.drink}菜單`;
+                
+                loadAdminSettings(); // 重新載入恢復按鈕狀態
+            } else {
+                showAlertModal(res.message);
+            }
+        }, showGasError, data);
     }
   </script>
 </body>
