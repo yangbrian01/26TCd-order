@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f3ffec; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: #f3ffec; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
     button { touch-action: manipulation; cursor: pointer; position: relative; z-index: 10; user-select: none; }
     .loading-spinner { border-top-color: #34d399; border-radius: 50%; width: 1.5rem; height: 1.5rem; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -23,15 +23,17 @@
     .menu-card:hover .img-container img { transform: scale(1.05); }
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    /* 確保底部安全距離給 iOS 裝置 */
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
   </style>
 </head>
-<body class="p-4 sm:p-8 min-h-screen flex flex-col items-center justify-start relative">
+<body class="p-4 sm:p-8 min-h-screen flex flex-col items-center justify-start relative transition-all duration-300" id="main-body">
 
   <button onclick="openAdminPwdModal()" class="fixed bottom-6 right-6 bg-red-100 text-red-700 p-4 rounded-full shadow-xl hover:bg-red-200 font-bold ring-2 ring-red-300 z-40 flex items-center justify-center transition hover:scale-105">
     <span class="text-xl"></span>
   </button>
 
-  <div id="main-container" class="w-full max-w-xl bg-white shadow-2xl rounded-2xl p-4 sm:p-8 space-y-6 ring-4 ring-green-300/50 relative flex flex-col min-h-[80vh]">
+  <div id="main-container" class="w-full max-w-xl bg-white shadow-2xl rounded-2xl p-4 sm:p-8 space-y-6 ring-4 ring-green-300/50 relative flex flex-col min-h-[80vh] transition-all duration-300">
     <div class="flex-grow space-y-6">
         <header class="text-center pb-4 border-b border-gray-200">
         <h1 class="text-4xl font-extrabold text-green-700">🍝 26TCd點餐 🥤</h1>
@@ -83,7 +85,19 @@
     </div>
   </div>
 
-  <div id="options-modal" class="modal-overlay hidden">
+  <div id="floating-cart" class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.15)] z-50 transform translate-y-full transition-transform duration-300 pb-safe">
+    <div class="max-w-xl mx-auto px-5 py-3 flex justify-between items-center">
+        <div class="flex flex-col">
+            <span class="text-sm text-gray-500 font-bold" id="floating-cart-count">已選 0 項</span>
+            <span class="text-2xl font-extrabold text-red-600" id="floating-cart-total">NT$ 0</span>
+        </div>
+        <button onclick="scrollToCart()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition flex items-center gap-2">
+            查看明細 ➔
+        </button>
+    </div>
+  </div>
+
+  <div id="options-modal" class="modal-overlay hidden z-[9999]">
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden transform transition-all duration-300 relative">
       <div id="modal-image-container" class="relative w-full h-48 sm:h-56 bg-gray-100 flex-shrink-0 hidden">
         <img id="modal-image" src="" class="w-full h-full object-cover">
@@ -103,7 +117,7 @@
     </div>
   </div>
 
-  <div id="pwd-modal" class="modal-overlay hidden">
+  <div id="pwd-modal" class="modal-overlay hidden z-[9999]">
     <div class="bg-white rounded-xl shadow-2xl p-6 space-y-6 w-80 text-center">
       <h2 class="text-2xl font-bold text-red-700 border-b pb-2">管理員登入</h2>
       <input type="password" id="admin-pwd-input" placeholder="請輸入密碼 (預設: 0000)" class="w-full p-3 border rounded-lg text-center font-bold">
@@ -114,7 +128,7 @@
     </div>
   </div>
 
-  <div id="system-modal" class="modal-overlay hidden">
+  <div id="system-modal" class="modal-overlay hidden z-[10000]">
     <div class="bg-white w-80 rounded-xl shadow-2xl p-6 text-center space-y-4">
        <div id="system-modal-icon" class="text-4xl">⚠️</div>
        <h3 class="text-lg font-bold text-gray-800">系統提示</h3>
@@ -126,7 +140,7 @@
     </div>
   </div>
 
-  <div id="image-preview-modal" class="modal-overlay hidden" onclick="closeImagePreview(event)">
+  <div id="image-preview-modal" class="modal-overlay hidden z-[10000]" onclick="closeImagePreview(event)">
      <div class="relative bg-white p-2 rounded-lg max-w-sm w-full mx-4 shadow-2xl text-center" onclick="event.stopPropagation()">
         <p class="text-sm text-gray-500 mb-2 font-bold">請長按圖片儲存，或截圖保存</p>
         <img id="preview-img" src="" class="w-full h-auto rounded border border-gray-200">
@@ -201,9 +215,7 @@
             </button>
           </div>
 
-          <div id="admin-tab-settings" class="hidden space-y-4 pb-10">
-              </div>
-
+          <div id="admin-tab-settings" class="hidden space-y-4 pb-10"></div>
         </div>
     </div>
   </section>
@@ -249,7 +261,7 @@
     let currentMenuTab = 'lunch';
     let editingItemIndex = -1; 
     let currentEditOptions = {};
-    let currentOrderFilter = 'all'; // 預設顯示全部名單
+    let currentOrderFilter = 'all';
 
     function showConfirmModal(msg, cb, isDanger=false) {
         document.getElementById('system-modal-message').textContent = msg;
@@ -463,12 +475,15 @@
 
     function removeCartItem(category) { cart[category] = null; updateCartUI(); }
 
+    // 【新增】懸浮購物車控制與排版邏輯
     function updateCartUI() {
       const listDiv = document.getElementById('cart-list');
       const items = [cart.lunch, cart.drink].filter(i => i !== null);
       let total = 0;
-      if(items.length === 0) { listDiv.innerHTML = '<p class="text-sm text-gray-500">尚未選擇。</p>'; } 
-      else {
+      
+      if(items.length === 0) { 
+        listDiv.innerHTML = '<p class="text-sm text-gray-500">尚未選擇。</p>'; 
+      } else {
         listDiv.innerHTML = items.map(item => {
           total += item.price;
           const cat = item.category || (item.id.startsWith('lunch') ? 'lunch' : 'drink');
@@ -476,9 +491,39 @@
           return `<div class="flex items-center justify-between p-3 bg-white border-b ring-1 ring-gray-100 rounded-lg shadow-sm"><div><p class="font-bold text-gray-700">${item.name}</p>${details}<p class="text-sm text-red-500 font-medium mt-1">NT$ ${item.price}</p></div><button onclick="removeCartItem('${cat}')" class="text-gray-400 hover:text-red-600 text-2xl font-bold px-2 remove-btn">&times;</button></div>`;
         }).join('');
       }
+      
       document.getElementById('total-price').textContent = `NT$ ${total}`;
       const btn = document.getElementById('submit-button');
       btn.disabled = items.length === 0; btn.textContent = items.length === 0 ? "請選擇餐點" : "確認點餐並提交";
+
+      // 控制懸浮購物車的顯示與隱藏
+      const floatingCart = document.getElementById('floating-cart');
+      const mainContainer = document.getElementById('main-container');
+      
+      if (items.length > 0) {
+        document.getElementById('floating-cart-count').textContent = `已選 ${items.length} 項`;
+        document.getElementById('floating-cart-total').textContent = `NT$ ${total}`;
+        floatingCart.classList.remove('translate-y-full');
+        // 增加主容器底部空間，避免最後一個餐點被懸浮列遮擋
+        mainContainer.style.paddingBottom = "5rem"; 
+      } else {
+        floatingCart.classList.add('translate-y-full');
+        mainContainer.style.paddingBottom = "1rem";
+      }
+    }
+
+    // 【新增】平滑捲動到購物車區域
+    function scrollToCart() {
+      const cartSummary = document.getElementById('cart-summary');
+      if (cartSummary) {
+        cartSummary.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        // 閃爍一下原本的提交按鈕，引導使用者點擊
+        const btn = document.getElementById('submit-button');
+        setTimeout(() => {
+          btn.classList.add('ring-4', 'ring-green-400', 'scale-105');
+          setTimeout(() => btn.classList.remove('ring-4', 'ring-green-400', 'scale-105'), 600);
+        }, 300);
+      }
     }
 
     function submitOrder() {
@@ -492,6 +537,9 @@
           btn.disabled = true; btn.textContent = "已完成點餐";
           document.getElementById('menu-container').classList.add('pointer-events-none', 'opacity-50');
           document.querySelectorAll('.remove-btn').forEach(b => b.classList.add('hidden'));
+          // 送出成功後隱藏懸浮列
+          document.getElementById('floating-cart').classList.add('translate-y-full');
+          document.getElementById('main-container').style.paddingBottom = "1rem";
         } else {
           showAlertModal(res.message); btn.disabled = false; btn.textContent = "確認點餐並提交";
         }
@@ -538,7 +586,7 @@
       if (tabName === 'orders') loadAdminOrders();
       if (tabName === 'summary') loadAdminSummary();
       if (tabName === 'menu') loadAdminMenuEditor(); 
-      if (tabName === 'settings') loadAdminSettings(); // 載入系統設定
+      if (tabName === 'settings') loadAdminSettings(); 
     }
 
     function loadAdminOrders() {
@@ -546,7 +594,6 @@
       div.innerHTML = '<p class="text-center text-gray-400">載入中...</p>';
       runGas('getAdminOrders', res => {
         if(res.length===0) { div.innerHTML='<p class="text-center">無資料</p>'; return; }
-        // 【修改】將是否點餐、繳費狀態綁定在 data 屬性上，方便 JS 過濾
         div.innerHTML = res.map(o => {
           const statusClass = o.paid ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500';
           const cardBorder = o.hasOrdered ? 'border-green-300' : 'border-gray-200 opacity-60';
@@ -560,11 +607,10 @@
               ${o.hasOrdered ? `<div class="text-right font-bold text-red-600 mt-2">總計: $${o.total}</div>` : ''}
             </div>`;
         }).join('');
-        applyOrderFilters(); // 載入後自動套用目前的過濾器
+        applyOrderFilters(); 
       }, showGasError);
     }
 
-    // 【新增】過濾器邏輯
     function setOrderFilter(type) {
         currentOrderFilter = type;
         ['all', 'unordered', 'unpaid'].forEach(t => {
@@ -604,11 +650,10 @@
       const card = btn.closest('.admin-order-card');
       btn.innerText = isPaid ? '未繳費' : '已繳費';
       btn.className = `px-3 py-1 rounded-full text-xs font-bold transition ${isPaid ? 'bg-gray-200 text-gray-500' : 'bg-green-500 text-white'}`;
-      card.dataset.paid = (!isPaid).toString(); // 更新狀態 (但不馬上隱藏，避免畫面亂跳)
+      card.dataset.paid = (!isPaid).toString(); 
       runGas('togglePaymentStatus', ()=>{}, showGasError, rowIndex, isPaid);
     }
 
-    // 【新增】複製未繳費名單
     function copyUnpaidList() {
         const cards = document.querySelectorAll('.admin-order-card');
         let unpaidNames = [];
@@ -618,8 +663,7 @@
             }
         });
         if (unpaidNames.length === 0) {
-            showAlertModal("太棒了！目前大家都已經繳費囉。");
-            return;
+            showAlertModal("太棒了！目前大家都已經繳費囉。"); return;
         }
         const textToCopy = `【點餐未繳費名單】\n${unpaidNames.join('、')}\n\n麻煩以上同學盡快繳交費用喔！謝謝～`;
         navigator.clipboard.writeText(textToCopy).then(() => {
@@ -857,9 +901,6 @@
       }, showGasError, currentMenuTab, adminMenuData[currentMenuTab]);
     }
 
-    // ==========================================
-    // 【新增】後台系統設定功能
-    // ==========================================
     function loadAdminSettings() {
         document.getElementById('admin-tab-settings').innerHTML = '<p class="text-center p-8 text-gray-500">載入設定中...</p>';
         runGas('getAdminSettings', res => {
@@ -910,8 +951,6 @@
         runGas('saveSystemSettings', res => {
             if(res.success) {
                 showAlertModal(res.message);
-                
-                // 即時更新畫面上所有與店名相關的文字
                 storeNames.lunch = data.lunchStore || '午餐';
                 storeNames.drink = data.drinkStore || '飲料';
                 document.getElementById('lunch-title').textContent = `🍝 ${storeNames.lunch} (擇一)`;
@@ -920,8 +959,7 @@
                 document.getElementById('summary-btn-drink').textContent = `${storeNames.drink}統計`;
                 document.getElementById('menu-tab-lunch').textContent = `${storeNames.lunch}菜單`;
                 document.getElementById('menu-tab-drink').textContent = `${storeNames.drink}菜單`;
-                
-                loadAdminSettings(); // 重新載入恢復按鈕狀態
+                loadAdminSettings(); 
             } else {
                 showAlertModal(res.message);
             }
